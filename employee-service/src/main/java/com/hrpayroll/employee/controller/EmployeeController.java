@@ -128,7 +128,7 @@ public class EmployeeController {
             // This endpoint is used by Attendance Service to determine who can approve leaves
             // In production, you'd call Authentication Service to get the role
             // For now, returning a default - this should be enhanced to call Auth Service
-            Employee employee = employeeService.getEmployeeById(id);
+            employeeService.getEmployeeById(id); // Verify employee exists
             // Note: This is a simplified implementation
             // In production, you'd need to call Authentication Service to get the actual role
             return ResponseEntity.ok("EMPLOYEE"); // Default, should be enhanced
@@ -143,7 +143,7 @@ public class EmployeeController {
             // This endpoint is used by Notification Service
             // In production, you'd get email from User in Authentication Service
             // For now, returning a placeholder
-            Employee employee = employeeService.getEmployeeById(id);
+            employeeService.getEmployeeById(id); // Verify employee exists
             // Note: Email should come from Authentication Service
             return ResponseEntity.ok("employee" + id + "@company.com"); // Placeholder
         } catch (RuntimeException e) {

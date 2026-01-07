@@ -55,7 +55,7 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        // Get employeeId from Employee Service (may be null)
+       
         Long employeeId = null;
         try {
             employeeId = employeeClient.getEmployeeIdByUserId(user.getId());

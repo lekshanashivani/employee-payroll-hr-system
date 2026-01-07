@@ -1,0 +1,591 @@
+{
+	"info": {
+		"_postman_id": "hr-payroll-system",
+		"name": "HR Payroll System",
+		"description": "Complete API collection for HR Payroll Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login - ADMIN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('admin_token', response.token);",
+									"    pm.environment.set('admin_user_id', response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@company.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login - HR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('hr_token', response.token);",
+									"    pm.environment.set('hr_user_id', response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"hr@company.com\",\n    \"password\": \"hr123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login - EMPLOYEE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('employee_token', response.token);",
+									"    pm.environment.set('employee_user_id', response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"employee@company.com\",\n    \"password\": \"emp123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Create User (ADMIN only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"hr@company.com\",\n    \"password\": \"hr123\",\n    \"role\": \"HR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Employee Service",
+			"item": [
+				{
+					"name": "Create Designation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('designation_id', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Software Engineer\",\n    \"baseSalary\": 50000.00,\n    \"taxPercentage\": 15.00,\n    \"bonusPercentage\": 10.00,\n    \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employees/designations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees", "designations"]
+						}
+					}
+				},
+				{
+					"name": "Get All Designations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/employees/designations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees", "designations"]
+						}
+					}
+				},
+				{
+					"name": "Create Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('employee_id', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": {{employee_user_id}},\n    \"name\": \"John Doe\",\n    \"phoneNumber\": \"+1234567890\",\n    \"dateOfBirth\": \"1990-01-15\",\n    \"address\": \"123 Main St\",\n    \"department\": \"Engineering\",\n    \"designation\": {\n        \"id\": {{designation_id}}\n    },\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employees",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"]
+						}
+					}
+				},
+				{
+					"name": "Get Employee by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/employees/{{employee_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees", "{{employee_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Employees",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/employees",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Attendance Service",
+			"item": [
+				{
+					"name": "Mark Attendance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{employee_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/mark?employeeId={{employee_id}}&date=2024-01-15",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "mark"],
+							"query": [
+								{
+									"key": "employeeId",
+									"value": "{{employee_id}}"
+								},
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Leave Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('leave_request_id', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{employee_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": {{employee_id}},\n    \"startDate\": \"2024-02-01\",\n    \"endDate\": \"2024-02-05\",\n    \"leaveType\": \"UNPAID\",\n    \"reason\": \"Personal emergency\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance/leave-requests",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "leave-requests"]
+						}
+					}
+				},
+				{
+					"name": "Get Pending Leave Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/leave-requests/pending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "leave-requests", "pending"]
+						}
+					}
+				},
+				{
+					"name": "Approve Leave Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/leave-requests/{{leave_request_id}}/approve",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "leave-requests", "{{leave_request_id}}", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Reject Leave Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/leave-requests/{{leave_request_id}}/reject?rejectionReason=Insufficient leave balance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "leave-requests", "{{leave_request_id}}", "reject"],
+							"query": [
+								{
+									"key": "rejectionReason",
+									"value": "Insufficient leave balance"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Payroll Service",
+			"item": [
+				{
+					"name": "Grant Bonus",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": {{employee_id}},\n    \"amount\": 5000.00,\n    \"description\": \"Performance bonus Q1\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-01-31\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payroll/bonuses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payroll", "bonuses"]
+						}
+					}
+				},
+				{
+					"name": "Generate Payslip",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('payslip_id', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payroll/payslips/generate?employeeId={{employee_id}}&payPeriod=2024-01",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payroll", "payslips", "generate"],
+							"query": [
+								{
+									"key": "employeeId",
+									"value": "{{employee_id}}"
+								},
+								{
+									"key": "payPeriod",
+									"value": "2024-01"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Payslip by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payroll/payslips/{{payslip_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payroll", "payslips", "{{payslip_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Notification Service",
+			"item": [
+				{
+					"name": "Create Announcement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{hr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Company Holiday\",\n    \"content\": \"Office will be closed on February 14th\",\n    \"targetAudience\": \"ALL\",\n    \"sendEmail\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/notifications/announcements",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", "announcements"]
+						}
+					}
+				},
+				{
+					"name": "Get Active Announcements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{employee_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/announcements",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", "announcements"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Audit Log Service",
+			"item": [
+				{
+					"name": "Get Audit Logs by Performed By",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audit-logs/performed-by/{{hr_user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audit-logs", "performed-by", "{{hr_user_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Audit Logs by Action",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audit-logs/action/LEAVE_APPROVED",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audit-logs", "action", "LEAVE_APPROVED"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}
+

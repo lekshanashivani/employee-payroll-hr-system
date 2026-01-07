@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Employee Service
@@ -65,9 +64,6 @@ public class EmployeeService {
 
         // Store old values for audit
         Long oldDesignationId = employee.getDesignation().getId();
-        String oldName = employee.getName();
-        String oldDepartment = employee.getDepartment();
-        EmployeeStatus oldStatus = employee.getStatus();
 
         // Update allowed fields
         if (employeeDTO.getName() != null) {
