@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  * 
  * Validates JWT tokens and forwards user context via headers.
  * JWT validation happens ONLY at the API Gateway.
- * Microservices rely on forwarded headers for authorization.
+ * Microservices rely on forwarded headers for the authorization.
  */
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
