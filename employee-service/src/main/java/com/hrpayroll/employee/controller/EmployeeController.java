@@ -31,6 +31,28 @@ public class EmployeeController {
     private DesignationService designationService;
 
     // Employee endpoints
+    /**
+     * Create employee with user account (combined operation)
+     * Creates both user account and employee profile in one call
+     */
+    @PostMapping("/with-user")
+    public ResponseEntity<EmployeeDTO> createEmployeeWithUser(
+            @RequestBody com.hrpayroll.employee.dto.CreateEmployeeWithUserRequest request,
+            @RequestHeader("X-User-Id") Long createdByUserId,
+            @RequestHeader("X-User-Role") String createdByRole) {
+        try {
+            Employee created = employeeService.createEmployeeWithUser(request, createdByUserId, createdByRole);
+            EmployeeDTO dto = mapToDTO(created);
+            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
+     * Create employee for existing user
+     * Use this when user account already exists
+     */
     @PostMapping
     public ResponseEntity<Employee> createEmployee(
             @RequestBody Employee employee) {

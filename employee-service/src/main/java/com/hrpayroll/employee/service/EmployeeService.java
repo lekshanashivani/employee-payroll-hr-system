@@ -41,6 +41,53 @@ public class EmployeeService {
     @Autowired
     private AuthenticationClient authenticationClient;
 
+    /**
+     * Create employee with user account in one operation
+     * Creates user in Authentication Service first, then employee profile
+     */
+    public Employee createEmployeeWithUser(
+            com.hrpayroll.employee.dto.CreateEmployeeWithUserRequest request,
+            Long createdByUserId,
+            String createdByRole) {
+        
+        // Step 1: Create user in Authentication Service
+        AuthenticationClient.CreateUserRequestDTO userRequest = new AuthenticationClient.CreateUserRequestDTO();
+        userRequest.setEmail(request.getEmail());
+        userRequest.setPassword(request.getPassword());
+        userRequest.setRole(request.getRole());
+        
+        AuthenticationClient.UserResponse userResponse;
+        try {
+            userResponse = authenticationClient.createUser(userRequest, createdByUserId, createdByRole);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create user account: " + e.getMessage());
+        }
+        
+        if (userResponse == null || userResponse.getId() == null) {
+            throw new RuntimeException("User creation failed - no user ID returned");
+        }
+        
+        // Step 2: Create employee profile with the userId from created user
+        Employee employee = new Employee();
+        employee.setUserId(userResponse.getId());
+        employee.setName(request.getName());
+        employee.setPhoneNumber(request.getPhoneNumber());
+        employee.setDateOfBirth(request.getDateOfBirth());
+        employee.setAddress(request.getAddress());
+        employee.setDepartment(request.getDepartment());
+        employee.setStatus(request.getStatus() != null ? request.getStatus() : EmployeeStatus.ACTIVE);
+        
+        Designation designation = designationRepository.findById(request.getDesignationId())
+                .orElseThrow(() -> new RuntimeException("Designation not found"));
+        employee.setDesignation(designation);
+        
+        return employeeRepository.save(employee);
+    }
+
+    /**
+     * Create employee for existing user
+     * Use this when user account already exists
+     */
     public Employee createEmployee(Employee employee) {
         if (employeeRepository.existsByUserId(employee.getUserId())) {
             throw new RuntimeException("Employee with this userId already exists");
