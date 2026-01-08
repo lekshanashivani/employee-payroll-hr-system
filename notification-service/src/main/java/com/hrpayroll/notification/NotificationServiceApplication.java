@@ -2,6 +2,7 @@ package com.hrpayroll.notification;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * Notification Service
@@ -17,6 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - No business logic
  */
 @SpringBootApplication
+@EnableFeignClients
 public class NotificationServiceApplication {
 
     public static void main(String[] args) {

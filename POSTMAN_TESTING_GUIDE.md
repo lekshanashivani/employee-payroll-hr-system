@@ -66,25 +66,14 @@ Create a new environment in Postman with these variables:
 
 ### PHASE 1: Authentication & User Setup
 
-#### Step 1.1: Create ADMIN User (Direct Database Insert)
-Since we need an ADMIN to create other users, you'll need to manually insert the first ADMIN user in the database:
+#### Step 1.1: ADMIN User Auto-Created
+**Good News!** The ADMIN user is automatically created when the Authentication Service starts.
 
-```sql
--- Run this in auth_db database
-INSERT INTO users (email, password, role, active, created_at, updated_at) 
-VALUES (
-    'admin@company.com', 
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', -- password: admin123
-    'ADMIN', 
-    true, 
-    NOW(), 
-    NOW()
-);
-```
+**Default Credentials:**
+- **Email:** `admin@company.com`
+- **Password:** `admin123`
 
-**Note:** The password hash above is for "admin123". To generate your own:
-- Use BCrypt online tool, or
-- Create a simple test endpoint to hash passwords
+The admin user is created automatically on first startup. If it already exists, it won't create a duplicate.
 
 #### Step 1.2: Login as ADMIN
 **Request:**
