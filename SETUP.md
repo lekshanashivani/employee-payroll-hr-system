@@ -80,27 +80,27 @@ mvn clean install
 
 2. **All Other Services** (in any order, they will register with Eureka)
    ```bash
-   # Authentication Service (Port 8081)
+   # Authentication Service (Port 8091)
    cd authentication-service
    mvn spring-boot:run
 
-   # Employee Service (Port 8082)
+   # Employee Service (Port 8092)
    cd employee-service
    mvn spring-boot:run
 
-   # Attendance Service (Port 8083)
+   # Attendance Service (Port 8093)
    cd attendance-service
    mvn spring-boot:run
 
-   # Payroll Service (Port 8084)
+   # Payroll Service (Port 8094)
    cd payroll-service
    mvn spring-boot:run
 
-   # Notification Service (Port 8085)
+   # Notification Service (Port 8095)
    cd notification-service
    mvn spring-boot:run
 
-   # Audit Log Service (Port 8086)
+   # Audit Log Service (Port 8096)
    cd audit-log-service
    mvn spring-boot:run
 
@@ -113,12 +113,12 @@ mvn clean install
 
 - **Eureka Server**: 8761
 - **API Gateway**: 8080
-- **Authentication Service**: 8081
-- **Employee Service**: 8082
-- **Attendance Service**: 8083
-- **Payroll Service**: 8084
-- **Notification Service**: 8085
-- **Audit Log Service**: 8086
+- **Authentication Service**: 8091
+- **Employee Service**: 8092
+- **Attendance Service**: 8093
+- **Payroll Service**: 8094
+- **Notification Service**: 8095
+- **Audit Log Service**: 8096
 
 ## API Gateway
 

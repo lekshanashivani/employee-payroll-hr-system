@@ -4,6 +4,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +18,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI employeeServiceOpenAPI() {
         Server server = new Server();
-        server.setUrl("http://localhost:8082");
+        server.setUrl("http://localhost:8092");
         server.setDescription("Employee Service URL");
 
         Contact contact = new Contact();
@@ -34,9 +36,21 @@ public class OpenApiConfig {
                 .description("API documentation for Employee Service - Employee lifecycle and designation management")
                 .license(license);
 
+        SecurityScheme securityScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .description("Enter JWT token (without 'Bearer' prefix)");
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("bearerAuth");
+
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(server));
+                .servers(List.of(server))
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes("bearerAuth", securityScheme))
+                .addSecurityItem(securityRequirement);
     }
 }
 

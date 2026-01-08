@@ -1,4 +1,4 @@
-package com.hrpayroll.payroll.config;
+package com.hrpayroll.audit.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -16,10 +16,10 @@ import java.util.List;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI payrollServiceOpenAPI() {
+    public OpenAPI auditLogServiceOpenAPI() {
         Server server = new Server();
-        server.setUrl("http://localhost:8094");
-        server.setDescription("Payroll Service URL");
+        server.setUrl("http://localhost:8096");
+        server.setDescription("Audit Log Service URL");
 
         Contact contact = new Contact();
         contact.setEmail("support@hrpayroll.com");
@@ -30,10 +30,10 @@ public class OpenApiConfig {
                 .url("https://www.apache.org/licenses/LICENSE-2.0.html");
 
         Info info = new Info()
-                .title("Payroll Service API")
+                .title("Audit Log Service API")
                 .version("1.0.0")
                 .contact(contact)
-                .description("API documentation for Payroll Service - Payroll calculation and payslip generation")
+                .description("API documentation for Audit Log Service - Centralized audit logging")
                 .license(license);
 
         SecurityScheme securityScheme = new SecurityScheme()

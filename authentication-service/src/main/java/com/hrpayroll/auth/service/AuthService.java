@@ -123,9 +123,24 @@ public class AuthService {
      * Update user role
      * Only ADMIN can change roles
      */
-    public User updateUserRole(Long userId, Role newRole, Long updatedByUserId) {
+    public User updateUserRole(Long userId, Role newRole, Long updatedByUserId, String updatedByRole) {
+        // Authorization check: Only ADMIN can change roles
+        if (updatedByRole == null || !updatedByRole.equals("ADMIN")) {
+            throw new RuntimeException("Only ADMIN can change user roles");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Prevent self-role-change (ADMIN cannot change their own role)
+        if (userId.equals(updatedByUserId)) {
+            throw new RuntimeException("Cannot change your own role");
+        }
+
+        // Prevent changing role to the same role
+        if (user.getRole() == newRole) {
+            throw new RuntimeException("User already has this role");
+        }
 
         Role oldRole = user.getRole();
         user.setRole(newRole);
