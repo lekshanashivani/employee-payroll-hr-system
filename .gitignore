@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore the .mvn directory at the root
+.mvn/
+
+# Track the .mvn wrapper inside employee-payroll-hr-system
+!employee-payroll-hr-system/.mvn/wrapper/
+
