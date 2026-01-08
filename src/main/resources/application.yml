@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: attendance-services
+
+  server:
+    port: 8084
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/attendance_db
+    username: root
+    password: Root123$
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource # Optional but explicitly set Hikari
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Can be 'create', 'update', 'validate', or 'none'
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect  # Use MySQLDialect for Hibernate 7.x
+        format_sql: true
+
+  eureka:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka/
+    instance:
+      prefer-ip-address: true
+
+  resilience4j:
+    circuitbreaker:
+      instances:
+        employeeServiceBreaker:
+          failure-rate-threshold: 50
+          wait-duration-in-open-state: 5000
+          ring-buffer-size-in-half-open-state: 10
+          ring-buffer-size-in-closed-state: 100
+
+logging:
+  level:
+    org.springframework: DEBUG
