@@ -3,81 +3,68 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { AttendanceService } from '../../../core/services/attendance.service';
-import { LeaveRequest } from '../../../core/models/attendance.model';
+import { HrMeetingRequest } from '../../../core/models/attendance.model';
 import { finalize } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-leave-request',
+  selector: 'app-meeting-request',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <!-- Admin View: Pending Requests -->
-    <div *ngIf="isAdmin()" class="card admin-panel">
-      <h3>Pending Leave Requests</h3>
+    <!-- Admin View: Pending Meetings -->
+    <div *ngIf="isHr()" class="card admin-panel">
+      <h3>Pending HR Meeting Requests</h3>
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
               <th>Employee ID</th>
-              <th>Type</th>
-              <th>Dates</th>
-              <th>Reason</th>
+              <th>Subject</th>
+              <th>Preferred Time</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let req of pendingRequests">
               <td>{{ req.employeeId }}</td>
-              <td><span class="badge">{{ req.leaveType }}</span></td>
-              <td>{{ req.startDate | date:'shortDate' }} - {{ req.endDate | date:'shortDate' }}</td>
-              <td>{{ req.reason }}</td>
+              <td>{{ req.subject }}<br><small class="text-muted">{{ req.description }}</small></td>
+              <td>{{ req.preferredDateTime | date:'short' }}</td>
               <td class="actions">
-                <button (click)="approve(req)" class="btn-icon approve" title="Approve">✓</button>
+                <button (click)="approve(req)" class="btn-icon approve" title="Approve & Schedule">✓</button>
                 <button (click)="reject(req)" class="btn-icon reject" title="Reject">✕</button>
               </td>
             </tr>
             <tr *ngIf="pendingRequests.length === 0">
-              <td colspan="5" class="empty-state">No pending requests.</td>
+              <td colspan="4" class="empty-state">No pending meeting requests.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Employee View: Request Form (Only if not Admin or if Admin wants to request for themselves?) 
-         For simplicity, let's keep the User layout for everyone, but Admins see the panel above too. -->
-    
-    <div *ngIf="!isAdmin()" class="split-layout" style="margin-top: 2rem;">
+    <div *ngIf="!isHr()" class="split-layout" style="margin-top: 2rem;">
       <!-- Left: Request Form -->
       <div class="card">
-        <h3>Request Leave</h3>
-        <form [formGroup]="leaveForm" (ngSubmit)="onSubmit()">
+        <h3>Request 1:1 with HR</h3>
+        <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()">
+          
           <div class="form-group">
-            <label>Leave Type</label>
-            <select formControlName="leaveType" class="form-control">
-              <option value="PAID">Paid Leave</option>
-              <option value="UNPAID">Unpaid Leave</option>
-            </select>
-          </div>
-
-          <div class="grid-row">
-            <div class="form-group">
-              <label>Start Date</label>
-              <input type="date" formControlName="startDate" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>End Date</label>
-              <input type="date" formControlName="endDate" class="form-control">
-            </div>
+            <label>Subject</label>
+            <input type="text" formControlName="subject" class="form-control" placeholder="e.g. Salary Discussion">
           </div>
 
           <div class="form-group">
-            <label>Reason</label>
-            <textarea formControlName="reason" rows="3" class="form-control" placeholder="Brief reason..."></textarea>
+            <label>Preferred Date & Time</label>
+            <input type="datetime-local" formControlName="preferredDateTime" class="form-control">
           </div>
 
-          <button type="submit" [disabled]="loading || leaveForm.invalid" class="btn-primary">
-            {{ loading ? 'Submitting...' : 'Submit Request' }}
+          <div class="form-group">
+            <label>Description (Optional)</label>
+            <textarea formControlName="description" rows="3" class="form-control" placeholder="Brief details..."></textarea>
+          </div>
+
+          <button type="submit" [disabled]="loading || meetingForm.invalid" class="btn-primary">
+            {{ loading ? 'Submitting...' : 'Request Meeting' }}
           </button>
           
           <div *ngIf="error" class="error-msg">{{ error }}</div>
@@ -86,20 +73,24 @@ import { finalize } from 'rxjs/operators';
 
       <!-- Right: My Requests History -->
       <div class="card">
-        <h3>My Leave History</h3>
+        <h3>My Meeting History</h3>
         <div class="list-container">
           <div *ngFor="let req of myRequests" class="leave-item">
             <div class="leave-header">
-              <span class="date-range">{{ req.startDate | date:'shortDate' }} - {{ req.endDate | date:'shortDate' }}</span>
+              <span class="date-range">{{ req.preferredDateTime | date:'mediumDate' }}</span>
               <span class="badge" [ngClass]="req.status.toLowerCase()">{{ req.status }}</span>
             </div>
             <div class="leave-details">
-              <span class="type">{{ req.leaveType }}</span>
-              <p class="reason">{{ req.reason }}</p>
+              <span class="type">{{ req.subject }}</span>
+              
+              <div *ngIf="req.status === 'APPROVED'" class="approved-info">
+                 <strong>Scheduled:</strong> {{ req.scheduledDateTime | date:'medium' }}
+              </div>
+
               <p *ngIf="req.rejectionReason" class="rejection-msg">Reason: {{ req.rejectionReason }}</p>
             </div>
           </div>
-          <div *ngIf="myRequests.length === 0" class="empty-state">No leave requests found.</div>
+          <div *ngIf="myRequests.length === 0" class="empty-state">No meeting requests found.</div>
         </div>
       </div>
     </div>
@@ -109,7 +100,6 @@ import { finalize } from 'rxjs/operators';
     .card { background: var(--surface-color); padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     h3 { margin-top: 0; color: var(--text-primary); }
     .form-group { margin-bottom: 1rem; }
-    .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
     .form-control { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; }
     .btn-primary { width: 100%; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; }
@@ -123,8 +113,9 @@ import { finalize } from 'rxjs/operators';
     .badge.approved { background: var(--success-bg); color: var(--success-color); }
     .badge.pending { background: #fff7ed; color: #c2410c; }
     .badge.rejected { background: var(--error-bg); color: var(--error-color); }
-    .type { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; }
-    .reason { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--text-secondary); }
+    .type { font-size: 0.875rem; font-weight: bold; color: var(--text-primary); }
+    .text-muted { font-size: 0.75rem; color: var(--text-secondary); }
+    .approved-info { margin-top: 0.5rem; color: var(--success-color); font-size: 0.9rem; }
     .rejection-msg { color: var(--error-color); font-size: 0.8rem; margin-top: 0.25rem; font-style: italic; }
     .empty-state { text-align: center; color: var(--text-secondary); padding: 1rem; }
     
@@ -139,10 +130,10 @@ import { finalize } from 'rxjs/operators';
     .btn-icon:hover { opacity: 0.8; }
   `]
 })
-export class LeaveRequestComponent implements OnInit {
-  leaveForm: FormGroup;
-  myRequests: LeaveRequest[] = [];
-  pendingRequests: LeaveRequest[] = [];
+export class MeetingRequestComponent implements OnInit {
+  meetingForm: FormGroup;
+  myRequests: HrMeetingRequest[] = [];
+  pendingRequests: HrMeetingRequest[] = [];
   loading = false;
   error = '';
   currentEmployeeId: number | null = null;
@@ -154,11 +145,10 @@ export class LeaveRequestComponent implements OnInit {
     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
-    this.leaveForm = this.fb.group({
-      leaveType: ['PAID', Validators.required],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
-      reason: ['', Validators.required]
+    this.meetingForm = this.fb.group({
+      subject: ['', Validators.required],
+      description: [''],
+      preferredDateTime: ['', Validators.required]
     });
   }
 
@@ -166,25 +156,25 @@ export class LeaveRequestComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.currentUserId = user.userId;
-      this.currentEmployeeId = user.employeeId || null; // Fix: Use employeeId
+      this.currentEmployeeId = user.employeeId || null;
 
       if (this.currentEmployeeId) {
         this.loadMyRequests();
       }
 
-      if (this.isAdmin()) {
+      if (this.isHr()) {
         this.loadPendingRequests();
       }
     }
   }
 
-  isAdmin(): boolean {
-    return this.authService.currentUser()?.role === 'ADMIN';
+  isHr(): boolean {
+    return this.authService.currentUser()?.role === 'HR';
   }
 
   loadMyRequests() {
     if (!this.currentEmployeeId) return;
-    this.attendanceService.getMyLeaveRequests(this.currentEmployeeId).subscribe({
+    this.attendanceService.getMyMeetingRequests(this.currentEmployeeId).subscribe({
       next: (data) => {
         this.myRequests = data;
         this.cdr.detectChanges();
@@ -193,7 +183,7 @@ export class LeaveRequestComponent implements OnInit {
   }
 
   loadPendingRequests() {
-    this.attendanceService.getAllPendingLeaveRequests().subscribe({
+    this.attendanceService.getAllPendingMeetingRequests().subscribe({
       next: (data) => {
         this.pendingRequests = data;
         this.cdr.detectChanges();
@@ -202,17 +192,17 @@ export class LeaveRequestComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.leaveForm.invalid || !this.currentEmployeeId) return;
+    if (this.meetingForm.invalid || !this.currentEmployeeId) return;
 
     this.loading = true;
     this.error = '';
 
-    const request: any = {
-      employeeId: this.currentEmployeeId, // Fix: Use correct ID
-      ...this.leaveForm.value
+    const request = {
+      employeeId: this.currentEmployeeId,
+      ...this.meetingForm.value
     };
 
-    this.attendanceService.createLeaveRequest(request)
+    this.attendanceService.createMeetingRequest(request)
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.detectChanges();
@@ -220,35 +210,38 @@ export class LeaveRequestComponent implements OnInit {
       .subscribe({
         next: (newItem) => {
           this.myRequests.unshift(newItem);
-          this.leaveForm.reset({ leaveType: 'PAID' });
+          this.meetingForm.reset();
         },
         error: (err) => {
-          this.loading = false;
-          // Try to extract error message from backend
-          const errorMsg = typeof err.error === 'string' ? err.error : 'Failed to submit request';
-          this.error = errorMsg;
-          console.error('Leave Request Error:', err);
+          this.error = 'Failed to submit request';
         }
       });
   }
 
-  approve(req: LeaveRequest) {
-    if (!confirm('Approve this leave request?')) return;
+  approve(req: HrMeetingRequest) {
+    // For approval, we need to set a scheduled time. Default to preferred time or ask user.
+    // Let's ask via a prompt or simple input for now.
+    // Since prompt is string, we'll try to use the preferred time as default
+    const defaultTime = req.preferredDateTime;
+    const scheduledTime = prompt('Confirm Scheduled Date & Time (ISO format YYYY-MM-DDTHH:MM):', defaultTime);
 
-    this.attendanceService.approveLeaveRequest(req.id, this.currentUserId) // Admin acts as User here
+    if (!scheduledTime) return;
+
+    this.attendanceService.approveMeetingRequest(req.id, this.currentUserId, scheduledTime)
       .subscribe({
         next: (updated) => {
           this.pendingRequests = this.pendingRequests.filter(r => r.id !== req.id);
           this.cdr.detectChanges();
+          alert(`Meeting Scheduled for ${new Date(scheduledTime).toLocaleString()}`);
         }
       });
   }
 
-  reject(req: LeaveRequest) {
+  reject(req: HrMeetingRequest) {
     const reason = prompt('Enter rejection reason:');
     if (!reason) return;
 
-    this.attendanceService.rejectLeaveRequest(req.id, this.currentUserId, reason)
+    this.attendanceService.rejectMeetingRequest(req.id, this.currentUserId, reason)
       .subscribe({
         next: (updated) => {
           this.pendingRequests = this.pendingRequests.filter(r => r.id !== req.id);

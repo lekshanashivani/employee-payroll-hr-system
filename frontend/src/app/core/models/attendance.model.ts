@@ -14,7 +14,7 @@ export interface LeaveRequest {
     startDate: string;
     endDate: string;
     reason: string;
-    type: 'SICK' | 'CASUAL' | 'UNPAID';
+    leaveType: 'PAID' | 'UNPAID';
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     approvedBy?: number;
     rejectionReason?: string;
@@ -26,5 +26,25 @@ export interface CreateLeaveRequest {
     startDate: string;
     endDate: string;
     reason: string;
-    type: 'SICK' | 'CASUAL' | 'UNPAID';
+    leaveType: 'PAID' | 'UNPAID';
+}
+
+export interface HrMeetingRequest {
+    id: number;
+    employeeId: number;
+    subject: string;
+    description: string;
+    preferredDateTime: string; // ISO string
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    approvedBy?: number;
+    scheduledDateTime?: string;
+    rejectionReason?: string;
+    createdAt: string;
+}
+
+export interface CreateMeetingRequest {
+    employeeId: number;
+    subject: string;
+    description: string;
+    preferredDateTime: string;
 }

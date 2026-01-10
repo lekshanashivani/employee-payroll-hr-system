@@ -32,7 +32,13 @@ public class PayrollController {
     public ResponseEntity<Payslip> generatePayslip(
             @RequestParam Long employeeId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth payPeriod,
-            @RequestHeader("X-User-Id") Long generatedByUserId) {
+            @RequestHeader("X-User-Id") Long generatedByUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+
+        if (!"ADMIN".equals(userRole) && !"HR".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             Payslip payslip = payrollService.generatePayslip(employeeId, payPeriod, generatedByUserId);
             return ResponseEntity.status(HttpStatus.CREATED).body(payslip);
@@ -67,7 +73,13 @@ public class PayrollController {
     @PostMapping("/bonuses")
     public ResponseEntity<Bonus> grantBonus(
             @RequestBody Bonus bonus,
-            @RequestHeader("X-User-Id") Long grantedByUserId) {
+            @RequestHeader("X-User-Id") Long grantedByUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+
+        if (!"ADMIN".equals(userRole) && !"HR".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             Bonus granted = bonusService.grantBonus(bonus, grantedByUserId);
             return ResponseEntity.status(HttpStatus.CREATED).body(granted);
@@ -92,4 +104,3 @@ public class PayrollController {
         }
     }
 }
-

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Employee } from '../../../core/models/employee.model';
 
 @Component({
@@ -11,7 +12,7 @@ import { Employee } from '../../../core/models/employee.model';
   template: `
     <div class="page-header">
       <h2>Employees</h2>
-      <a routerLink="/employees/create" class="btn-primary">Add Employee</a>
+      <a routerLink="/employees/create" class="btn-primary" *ngIf="isAdmin()">Add Employee</a>
     </div>
 
     <div class="table-container">
@@ -155,8 +156,13 @@ export class EmployeeListComponent implements OnInit {
 
   constructor(
     private employeeService: EmployeeService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  isAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'ADMIN';
+  }
 
   ngOnInit() {
     this.loadEmployees();

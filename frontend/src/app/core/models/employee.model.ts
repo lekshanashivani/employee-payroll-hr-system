@@ -17,7 +17,7 @@ export interface Employee {
     department: string;
     designationId: number;
     designationName: string;
-    status: 'ACTIVE' | 'TERMINATED' | 'RESIGNED';
+    status: 'ACTIVE' | 'INACTIVE';
     exitDate?: string;
 }
 

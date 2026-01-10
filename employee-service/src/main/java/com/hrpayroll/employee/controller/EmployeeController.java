@@ -44,6 +44,12 @@ public class EmployeeController {
             @RequestBody com.hrpayroll.employee.dto.CreateEmployeeWithUserRequest request,
             @RequestHeader("X-User-Id") Long createdByUserId,
             @RequestHeader("X-User-Role") String createdByRole) {
+
+        // Security Check
+        if (!"ADMIN".equals(createdByRole) && !"HR".equals(createdByRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             Employee created = employeeService.createEmployee(request, createdByUserId, createdByRole);
             EmployeeDTO dto = mapToDTO(created);
@@ -55,7 +61,26 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable("id") Long id) {
+    public ResponseEntity<EmployeeDTO> getEmployeeById(
+            @PathVariable("id") Long id,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestHeader(value = "X-Employee-Id", required = false) String requestEmployeeIdStr) {
+
+        // Security Check
+        boolean isAdminOrHr = "ADMIN".equals(userRole) || "HR".equals(userRole);
+        boolean isSelf = requestEmployeeIdStr != null && !requestEmployeeIdStr.isEmpty()
+                && Long.parseLong(requestEmployeeIdStr) == id;
+
+        // Allow internal calls (where headers might be missing/different) or authorized
+        // users
+        // NOTE: For strict security, internal calls should use a special header or
+        // mechanism.
+        // For now, if role is missing, we might assume internal but better to be safe.
+        // Assuming public endpoint for now needs auth.
+        if (userRole != null && !isAdminOrHr && !isSelf) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             Employee employee = employeeService.getEmployeeById(id);
             EmployeeDTO dto = mapToDTO(employee);
@@ -87,7 +112,14 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees(
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+
+        // Security Check
+        if (!"ADMIN".equals(userRole) && !"HR".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         List<Employee> employees = employeeService.getAllEmployees();
         List<EmployeeDTO> dtos = employees.stream()
                 .map(this::mapToDTO)
@@ -100,7 +132,18 @@ public class EmployeeController {
             @PathVariable("id") Long id,
             @RequestBody EmployeeDTO employeeDTO,
             @RequestHeader("X-User-Id") Long updatedByUserId,
-            @RequestHeader("X-User-Role") String updatedByRole) {
+            @RequestHeader("X-User-Role") String updatedByRole,
+            @RequestHeader(value = "X-Employee-Id", required = false) String requestEmployeeIdStr) {
+
+        // Security Check: Allow ADMIN/HR OR the employee themselves
+        boolean isAdminOrHr = "ADMIN".equals(updatedByRole) || "HR".equals(updatedByRole);
+        boolean isSelf = requestEmployeeIdStr != null && !requestEmployeeIdStr.isEmpty()
+                && Long.parseLong(requestEmployeeIdStr) == id;
+
+        if (!isAdminOrHr && !isSelf) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             Employee updated = employeeService.updateEmployee(id, employeeDTO, updatedByUserId, updatedByRole);
             EmployeeDTO dto = mapToDTO(updated);
@@ -111,7 +154,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}/deactivate")
-    public ResponseEntity<Void> deactivateEmployee(
+    public ResponseEntity<?> deactivateEmployee(
             @PathVariable("id") Long id,
             @RequestParam EmployeeStatus status,
             @RequestHeader("X-User-Id") Long deactivatedByUserId) {
@@ -119,7 +162,8 @@ public class EmployeeController {
             employeeService.deactivateEmployee(id, status, deactivatedByUserId);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            e.printStackTrace(); // For server logs
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

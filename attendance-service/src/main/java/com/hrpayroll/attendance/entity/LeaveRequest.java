@@ -36,7 +36,7 @@ public class LeaveRequest {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "leave_type", nullable = false)
+    @Column(name = "leave_type", nullable = false, length = 20)
     private LeaveType leaveType;
 
     @Column(name = "reason")
@@ -170,4 +170,3 @@ public class LeaveRequest {
         this.updatedAt = updatedAt;
     }
 }
-

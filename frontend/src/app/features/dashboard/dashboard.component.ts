@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { EmployeeService } from '../../core/services/employee.service';
 import { AuditLogService } from '../../core/services/audit-log.service';
+import { NotificationService, Announcement } from '../../core/services/notification.service';
 import { Employee } from '../../core/models/employee.model';
 import { AuditLog } from '../../core/models/audit-log.model';
 
@@ -16,8 +17,8 @@ import { AuditLog } from '../../core/models/audit-log.model';
       <p>Welcome back, {{ getUserName() }}</p>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
+    <!-- Admin View: Stats Grid -->
+    <div class="stats-grid" *ngIf="isAdmin()">
       <div class="stat-card">
         <h3>Total Employees</h3>
         <p class="value">{{ stats.total }}</p>
@@ -32,8 +33,47 @@ import { AuditLog } from '../../core/models/audit-log.model';
       </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="section-container">
+    <!-- Employee View: Personal Stats -->
+    <div class="stats-grid" *ngIf="!isAdmin() && myProfile">
+       <div class="stat-card">
+         <h3>My Department</h3>
+         <p class="value text-sm">{{ myProfile.department }}</p>
+       </div>
+       <div class="stat-card">
+         <h3>My Designation</h3>
+         <p class="value text-sm">{{ myProfile.designationName }}</p>
+       </div>
+       <div class="stat-card" [class.highlight-green]="myProfile.status === 'ACTIVE'">
+         <h3>My Status</h3>
+         <p class="value">{{ myProfile.status }}</p>
+       </div>
+    </div>
+
+    <!-- Announcements Section -->
+    <div class="section-container" style="margin-bottom: 2rem;">
+      <div class="section-header">
+        <h2>📢 Announcements</h2>
+      </div>
+      
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let ann of announcements">
+          <div class="activity-content">
+            <p class="activity-title" style="margin-bottom: 0.5rem;">
+              <span class="action" style="color: var(--primary-color);">{{ ann.title }}</span>
+              <span class="time">{{ ann.createdAt | date:'short' }}</span>
+            </p>
+            <p class="activity-desc">{{ ann.message }}</p>
+          </div>
+        </div>
+        
+        <div *ngIf="announcements.length === 0" class="empty-state">
+          No active announcements.
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin View: Recent Activity -->
+    <div class="section-container" *ngIf="isAdmin()">
       <div class="section-header">
         <h2>Recent Activity</h2>
       </div>
@@ -82,6 +122,7 @@ import { AuditLog } from '../../core/models/audit-log.model';
     }
     .stat-card h3 { margin: 0; font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
     .stat-card .value { margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: 600; color: var(--text-primary); }
+    .stat-card .value.text-sm { font-size: 1.25rem; margin-top: 0.75rem; }
     .highlight-green .value { color: #10B981; }
     .highlight-red .value { color: #EF4444; }
 
@@ -113,22 +154,57 @@ import { AuditLog } from '../../core/models/audit-log.model';
 export class DashboardComponent implements OnInit {
   stats = { total: 0, active: 0, inactive: 0 };
   recentActivity: AuditLog[] = [];
+  announcements: Announcement[] = [];
   userMap = new Map<number, string>();
+  myProfile: Employee | null = null;
 
   constructor(
     private authService: AuthService,
     private employeeService: EmployeeService,
     private auditLogService: AuditLogService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.loadStats();
-    this.loadActivity();
+    this.loadAnnouncements(); // Load for everyone
+
+    if (this.isAdmin()) {
+      this.loadStats();
+      this.loadActivity();
+    } else {
+      this.loadMyProfile();
+    }
+  }
+
+  loadAnnouncements() {
+    this.notificationService.getActiveAnnouncements().subscribe({
+      next: (data) => {
+        this.announcements = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to load announcements', err)
+    });
+  }
+
+  isAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'ADMIN';
   }
 
   getUserName(): string {
     return this.authService.currentUser()?.email?.split('@')[0] || 'User';
+  }
+
+  loadMyProfile() {
+    const employeeId = this.authService.currentUser()?.employeeId;
+    if (employeeId) {
+      this.employeeService.getEmployeeById(employeeId).subscribe({
+        next: (emp) => {
+          this.myProfile = emp;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   loadStats() {

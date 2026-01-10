@@ -1,18 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { AttendanceService } from '../../../core/services/attendance.service';
 import { Attendance } from '../../../core/models/attendance.model';
+import { finalize } from 'rxjs/operators';
+
 
 @Component({
-    selector: 'app-attendance-list',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  // ... (omitting lengthy metadata for brevity in replacement chunk)
+  // Wait, I need to be careful with REPLACE logic.
+  // I will just replace the specific Import block and the Class Body.
+
+  selector: 'app-attendance-list',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="page-header">
       <h2>My Attendance</h2>
       <button 
-        *ngIf="!todayAttendance" 
+        *ngIf="!todayAttendance && !isAdmin()" 
         (click)="markAttendance()" 
         class="btn-primary" 
         [disabled]="marking">
@@ -27,6 +33,7 @@ import { Attendance } from '../../../core/models/attendance.model';
       <table class="data-table">
         <thead>
           <tr>
+            <th *ngIf="isAdmin()">Employee</th>
             <th>Date</th>
             <th>Status</th>
             <th>Time</th>
@@ -34,6 +41,7 @@ import { Attendance } from '../../../core/models/attendance.model';
         </thead>
         <tbody>
           <tr *ngFor="let record of attendanceHistory">
+            <td *ngIf="isAdmin()">ID: {{ record.employeeId }}</td>
             <td>{{ record.date | date:'mediumDate' }}</td>
             <td>
               <span class="badge" [class.present]="record.status === 'PRESENT'">
@@ -49,7 +57,7 @@ import { Attendance } from '../../../core/models/attendance.model';
       </table>
     </div>
   `,
-    styles: [`
+  styles: [`
     .page-header {
       display: flex;
       justify-content: space-between;
@@ -123,50 +131,81 @@ import { Attendance } from '../../../core/models/attendance.model';
   `]
 })
 export class AttendanceListComponent implements OnInit {
-    attendanceHistory: Attendance[] = [];
-    todayAttendance: Attendance | null = null;
-    marking = false;
-    currentUserId: number = 0;
+  attendanceHistory: Attendance[] = [];
+  todayAttendance: Attendance | null = null;
+  marking = false;
+  currentEmployeeId: number | null = null;
 
-    constructor(
-        private attendanceService: AttendanceService,
-        private authService: AuthService
-    ) { }
+  constructor(
+    private attendanceService: AttendanceService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
-    ngOnInit() {
-        const user = this.authService.currentUser();
-        if (user?.userId) {
-            this.currentUserId = user.userId;
-            this.loadAttendance();
+  ngOnInit() {
+    const user = this.authService.currentUser();
+    if (user?.employeeId) {
+      this.currentEmployeeId = user.employeeId;
+      this.loadAttendance();
+    } else if (this.isAdmin()) {
+      this.loadAttendance();
+    }
+  }
+
+  loadAttendance() {
+    const isAdmin = this.authService.currentUser()?.role === 'ADMIN';
+
+    const end = new Date();
+    const start = new Date();
+    start.setDate(1);
+
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
+
+    if (isAdmin) {
+      this.attendanceService.getAllAttendance(startStr, endStr).subscribe({
+        next: (data) => {
+          this.attendanceHistory = data;
+          this.cdr.detectChanges();
         }
+      });
+    } else if (this.currentEmployeeId) {
+      this.attendanceService.getAttendanceHistory(this.currentEmployeeId).subscribe({
+        next: (data) => {
+          this.attendanceHistory = data;
+          this.checkToday();
+          this.cdr.detectChanges();
+        }
+      });
     }
+  }
 
-    loadAttendance() {
-        this.attendanceService.getAttendanceHistory(this.currentUserId).subscribe({
-            next: (data) => {
-                this.attendanceHistory = data;
-                this.checkToday();
-            }
-        });
-    }
+  checkToday() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    this.todayAttendance = this.attendanceHistory.find(a => a.date === todayStr) || null;
+  }
 
-    checkToday() {
-        const todayStr = new Date().toISOString().split('T')[0];
-        this.todayAttendance = this.attendanceHistory.find(a => a.date === todayStr) || null;
-    }
+  markAttendance() {
+    if (!this.currentEmployeeId) return;
 
-    markAttendance() {
-        this.marking = true;
-        this.attendanceService.markAttendance(this.currentUserId).subscribe({
-            next: (newRecord) => {
-                this.attendanceHistory.unshift(newRecord);
-                this.todayAttendance = newRecord;
-                this.marking = false;
-            },
-            error: (err) => {
-                console.error('Failed to mark attendance', err);
-                this.marking = false;
-            }
-        });
-    }
+    this.marking = true;
+    this.attendanceService.markAttendance(this.currentEmployeeId)
+      .pipe(finalize(() => {
+        this.marking = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (newRecord) => {
+          this.attendanceHistory.unshift(newRecord);
+          this.todayAttendance = newRecord;
+        },
+        error: (err) => {
+          console.error('Failed to mark attendance', err);
+        }
+      });
+  }
+
+  isAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'ADMIN';
+  }
 }

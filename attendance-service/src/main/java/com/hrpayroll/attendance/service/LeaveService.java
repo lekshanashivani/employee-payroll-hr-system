@@ -38,6 +38,9 @@ public class LeaveService {
     private EmployeeClient employeeClient;
 
     @Autowired
+    private AttendanceService attendanceService;
+
+    @Autowired
     private NotificationClient notificationClient;
 
     @Autowired
@@ -130,7 +133,8 @@ public class LeaveService {
         return saved;
     }
 
-    public LeaveRequest rejectLeaveRequest(Long leaveRequestId, String rejectionReason, Long rejectedByUserId, String rejectedByRole) {
+    public LeaveRequest rejectLeaveRequest(Long leaveRequestId, String rejectionReason, Long rejectedByUserId,
+            String rejectedByRole) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("Leave request not found"));
 
@@ -211,4 +215,3 @@ public class LeaveService {
         return leaveRequestRepository.findApprovedUnpaidLeaves(employeeId, LeaveType.UNPAID, startDate, endDate);
     }
 }
-

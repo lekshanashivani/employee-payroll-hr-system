@@ -18,12 +18,8 @@ import { AuthService } from '../../../core/services/auth.service';
           <span class="icon">📊</span>
           Dashboard
         </a>
-        
-        <a routerLink="/employees" routerLinkActive="active" class="nav-item">
-          <span class="icon">👥</span>
-          Employees
-        </a>
-        
+
+        <!-- Common Links -->
         <a routerLink="/attendance" routerLinkActive="active" class="nav-item">
           <span class="icon">📅</span>
           Attendance
@@ -34,16 +30,41 @@ import { AuthService } from '../../../core/services/auth.service';
           Payroll
         </a>
 
-        <!-- Admin Only -->
-        <a *ngIf="isAdmin()" routerLink="/designations" routerLinkActive="active" class="nav-item">
-          <span class="icon">🏷️</span>
-          Designations
+        <a routerLink="/leave-requests" routerLinkActive="active" class="nav-item">
+          <span class="icon">📝</span>
+          Leave Requests
         </a>
-        
-        <a *ngIf="isAdmin()" routerLink="/audit-logs" routerLinkActive="active" class="nav-item">
-          <span class="icon">🛡️</span>
-          Audit Logs
+
+        <a routerLink="/meeting-requests" routerLinkActive="active" class="nav-item" *ngIf="!isAdmin()">
+          <span class="icon">💬</span>
+          HR Meetings
         </a>
+
+        <!-- Admin Only Management Links -->
+        <ng-container *ngIf="isAdmin()">
+          <a routerLink="/employees" routerLinkActive="active" class="nav-item">
+            <span class="icon">👥</span>
+            Employees
+          </a>
+
+          <a routerLink="/designations" routerLinkActive="active" class="nav-item">
+            <span class="icon">🏷️</span>
+            Designations
+          </a>
+          
+          <a routerLink="/audit-logs" routerLinkActive="active" class="nav-item">
+            <span class="icon">🛡️</span>
+            Audit Logs
+          </a>
+        </ng-container>
+
+        <!-- Employee Links -->
+        <ng-container *ngIf="!isAdmin()">
+            <a [routerLink]="['/employees', getEmployeeId()]" routerLinkActive="active" class="nav-item" *ngIf="getEmployeeId()">
+                <span class="icon">👤</span>
+                My Profile
+            </a>
+        </ng-container>
       </nav>
 
       <div class="user-info">
@@ -143,6 +164,10 @@ export class SidebarComponent {
 
   isAdmin(): boolean {
     return this.authService.currentUser()?.role === 'ADMIN';
+  }
+
+  getEmployeeId(): number | undefined {
+    return this.authService.currentUser()?.employeeId;
   }
 
   logout() {

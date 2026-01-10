@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Designation, Employee } from '../../../core/models/employee.model';
 import { finalize } from 'rxjs/operators';
 
@@ -17,8 +18,10 @@ import { finalize } from 'rxjs/operators';
         <span class="id-tag">ID: {{ employee?.id }}</span>
       </div>
       <div>
-        <button type="button" (click)="toggleEdit()" class="btn-secondary" *ngIf="!isEditing">Edit Profile</button>
+        <button type="button" (click)="toggleEdit()" class="btn-secondary" *ngIf="!isEditing && canEdit()">Edit Profile</button>
         <button type="button" (click)="cancelEdit()" class="btn-secondary" *ngIf="isEditing">Cancel</button>
+        <button type="button" (click)="deactivateEmployee()" class="btn-danger" *ngIf="!isEditing && isAdmin() && employee?.status === 'ACTIVE'">Deactivate</button>
+        <button type="button" (click)="activateEmployee()" class="btn-success" *ngIf="!isEditing && isAdmin() && employee?.status !== 'ACTIVE'">Activate</button>
       </div>
     </div>
 
@@ -221,6 +224,26 @@ import { finalize } from 'rxjs/operators';
       border-color: var(--border-color);
       color: var(--text-primary);
     }
+    .btn-danger {
+        background: var(--error-bg);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    .btn-success {
+        background: var(--success-bg);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
   `]
 })
 export class EmployeeDetailComponent implements OnInit {
@@ -234,6 +257,7 @@ export class EmployeeDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private employeeService: EmployeeService,
+    private authService: AuthService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) {
@@ -245,6 +269,55 @@ export class EmployeeDetailComponent implements OnInit {
       department: ['', Validators.required],
       designationId: ['', Validators.required]
     });
+  }
+
+  isAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'ADMIN';
+  }
+
+  canEdit(): boolean {
+    const user = this.authService.currentUser();
+    if (!user || !this.employee) return false;
+
+    // Admin can edit anyone
+    if (user.role === 'ADMIN') return true;
+
+    // Employees can edit their own profile
+    // We compare user.employeeId (from token) with this.employee.id (from route/data)
+    return user.employeeId === this.employee.id;
+  }
+
+  deactivateEmployee() {
+    if (!confirm('Are you sure you want to deactivate this employee? They will no longer be able to log in.')) return;
+    this.updateStatus('INACTIVE');
+  }
+
+  activateEmployee() {
+    if (!confirm('Activate this employee?')) return;
+    this.updateStatus('ACTIVE');
+  }
+
+  updateStatus(status: 'ACTIVE' | 'INACTIVE') {
+    if (!this.employee) return;
+    this.loading = true;
+
+    this.employeeService.deactivateEmployee(this.employee.id, status)
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: () => {
+          if (this.employee) {
+            this.employee.status = status;
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Failed to update status');
+        }
+      });
   }
 
   ngOnInit() {

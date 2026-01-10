@@ -42,6 +42,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/attendance/leave-request/leave-request.component').then(m => m.LeaveRequestComponent)
             },
             {
+                path: 'meeting-requests',
+                loadComponent: () => import('./features/attendance/meeting-request/meeting-request.component').then(m => m.MeetingRequestComponent)
+            },
+            {
                 path: 'payroll',
                 loadComponent: () => import('./features/payroll/payroll-list/payroll-list.component').then(m => m.PayrollListComponent)
             },

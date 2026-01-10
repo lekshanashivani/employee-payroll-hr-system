@@ -37,12 +37,30 @@ public class AttendanceService {
         return attendanceRepository.save(attendance);
     }
 
-    public List<Attendance> getAttendanceByEmployeeAndDateRange(Long employeeId, LocalDate startDate, LocalDate endDate) {
+    public void markLeave(Long employeeId, LocalDate date) {
+        // If already marked (e.g. as Present?), overwrite or skip?
+        // Logic: Leave overrides everything? Or error?
+        // Let's safe-guard: if present, update status. If not, create.
+        Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employeeId, date)
+                .orElse(new Attendance());
+
+        attendance.setEmployeeId(employeeId);
+        attendance.setDate(date);
+        attendance.setStatus(AttendanceStatus.LEAVE);
+
+        attendanceRepository.save(attendance);
+    }
+
+    public List<Attendance> getAttendanceByEmployeeAndDateRange(Long employeeId, LocalDate startDate,
+            LocalDate endDate) {
         return attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
     }
 
     public List<Attendance> getAttendanceByDate(LocalDate date) {
         return attendanceRepository.findByDate(date);
     }
-}
 
+    public List<Attendance> getAllAttendance(LocalDate startDate, LocalDate endDate) {
+        return attendanceRepository.findByDateBetween(startDate, endDate);
+    }
+}

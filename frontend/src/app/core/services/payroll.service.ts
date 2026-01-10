@@ -12,11 +12,12 @@ export class PayrollService {
 
     // Payslips
     getMyPayslips(employeeId: number): Observable<Payslip[]> {
-        return this.api.get<Payslip[]>(`/payroll/employee/${employeeId}`);
+        return this.api.get<Payslip[]>(`/payroll/payslips/employee/${employeeId}`);
     }
 
     generatePayslip(request: GeneratePayslipRequest): Observable<Payslip> {
-        return this.api.post<Payslip>('/payroll/payslips/generate', request);
+        // Backend expects Query Params: ?employeeId=...&payPeriod=...
+        return this.api.post<Payslip>(`/payroll/payslips/generate?employeeId=${request.employeeId}&payPeriod=${request.payPeriod}`, {});
     }
 
     getPayslipById(id: number): Observable<Payslip> {

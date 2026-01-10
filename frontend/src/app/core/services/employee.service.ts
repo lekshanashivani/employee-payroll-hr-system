@@ -27,6 +27,10 @@ export class EmployeeService {
         return this.api.put<Employee>(`/employees/${id}`, employee);
     }
 
+    deactivateEmployee(id: number, status: 'ACTIVE' | 'INACTIVE'): Observable<void> {
+        return this.api.put<void>(`/employees/${id}/deactivate?status=${status}`, {});
+    }
+
     // Designation Endpoints
     getAllDesignations(): Observable<Designation[]> {
         return this.api.get<Designation[]>('/employees/designations');

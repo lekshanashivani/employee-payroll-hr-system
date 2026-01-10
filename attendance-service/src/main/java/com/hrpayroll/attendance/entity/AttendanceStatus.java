@@ -4,6 +4,8 @@ package com.hrpayroll.attendance.entity;
  * Attendance Status
  */
 public enum AttendanceStatus {
-    PRESENT
+    PRESENT,
+    ABSENT,
+    LEAVE,
+    HOLIDAY
 }
-

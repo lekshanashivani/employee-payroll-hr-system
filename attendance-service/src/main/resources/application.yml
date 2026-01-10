@@ -1,5 +1,10 @@
 server:
   port: 8093
+  error:
+    include-message: always
+    include-binding-errors: always
+  servlet:
+    context-path: /
 
 spring:
   application:
@@ -31,4 +36,6 @@ feign:
       default:
         connectTimeout: 5000
         readTimeout: 5000
+
+
 

@@ -10,4 +10,3 @@ public enum LeaveType {
     PAID,
     UNPAID
 }
-
