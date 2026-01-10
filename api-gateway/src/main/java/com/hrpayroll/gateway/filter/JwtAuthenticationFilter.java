@@ -106,7 +106,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
-        return response.setComplete();
+        response.getHeaders().add("Content-Type", "application/json");
+        
+        // Add CORS headers
+        response.getHeaders().add("Access-Control-Allow-Origin", "http://localhost:4200");
+        response.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.getHeaders().add("Access-Control-Allow-Headers", "*");
+        response.getHeaders().add("Access-Control-Allow-Credentials", "true");
+        
+        String errorJson = "{\"error\":\"" + message + "\",\"status\":" + status.value() + "}";
+        return response.writeWith(Mono.just(response.bufferFactory().wrap(errorJson.getBytes())));
     }
 
     @Override
@@ -114,4 +123,3 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return -100; // High priority
     }
 }
-

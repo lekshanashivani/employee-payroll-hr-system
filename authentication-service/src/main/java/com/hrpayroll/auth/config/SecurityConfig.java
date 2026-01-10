@@ -33,9 +33,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/users/internal").permitAll() // Internal endpoint for Employee
+                                                                                 // Service (Trusts internal calls)
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         return http.build();
     }
@@ -45,4 +46,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

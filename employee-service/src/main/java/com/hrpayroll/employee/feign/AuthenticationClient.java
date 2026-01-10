@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "authentication-service")
 public interface AuthenticationClient {
 
-    @PostMapping("/api/auth/users")
+    @PostMapping("/api/auth/users/internal")
     UserResponse createUser(
             @RequestBody CreateUserRequestDTO request,
             @RequestHeader("X-User-Id") Long createdByUserId,

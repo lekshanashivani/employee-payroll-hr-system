@@ -55,7 +55,6 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-       
         Long employeeId = null;
         try {
             employeeId = employeeClient.getEmployeeIdByUserId(user.getId());
@@ -65,13 +64,25 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getId(), user.getRole().name(), employeeId);
 
+        // Audit login
+        try {
+            AuditLogRequest auditRequest = new AuditLogRequest();
+            auditRequest.setAction("USER_LOGIN");
+            auditRequest.setServiceName("Authentication Service");
+            auditRequest.setPerformedBy(user.getId());
+            auditRequest.setTargetId(user.getId());
+            auditRequest.setDescription("User logged in successfully");
+            auditLogClient.createAuditLog(auditRequest);
+        } catch (Exception e) {
+            // Non-blocking
+        }
+
         return new LoginResponse(
                 token,
                 user.getEmail(),
                 user.getRole().name(),
                 user.getId(),
-                employeeId
-        );
+                employeeId);
     }
 
     /**
@@ -178,4 +189,3 @@ public class AuthService {
         userRepository.save(user);
     }
 }
-

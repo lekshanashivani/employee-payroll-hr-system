@@ -49,17 +49,14 @@ public class AuthController {
         }
     }
 
-    @Operation(summary = "Create user", description = "Create a new user (ADMIN only). Only ADMIN can create HR accounts.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request - Email already exists or only ADMIN can create HR accounts")
-    })
-    @PostMapping("/users")
-    public ResponseEntity<User> createUser(
+    /**
+     * Internal endpoint for creating users (called by Employee Service via Feign)
+     * Not exposed in public API - users should be created via employee creation endpoint
+     */
+    @PostMapping("/users/internal")
+    public ResponseEntity<User> createUserInternal(
             @Valid @RequestBody CreateUserRequest request,
-            @Parameter(description = "ID of the user creating the account", required = true, example = "1")
             @RequestHeader("X-User-Id") Long createdByUserId,
-            @Parameter(description = "Role of the user creating the account (must be ADMIN for HR accounts)", required = true, example = "ADMIN")
             @RequestHeader("X-User-Role") String createdByRole) {
         try {
             User user = authService.createUser(request, createdByUserId, createdByRole);

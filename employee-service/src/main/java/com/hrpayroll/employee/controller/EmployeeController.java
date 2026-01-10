@@ -34,38 +34,28 @@ public class EmployeeController {
     /**
      * Create employee with user account (combined operation)
      * Creates both user account and employee profile in one call
+     * 
+     * Authorization:
+     * - HR and ADMIN can create employees (role = EMPLOYEE)
+     * - Only ADMIN can create HR accounts (role = HR)
      */
-    @PostMapping("/with-user")
-    public ResponseEntity<EmployeeDTO> createEmployeeWithUser(
+    @PostMapping
+    public ResponseEntity<EmployeeDTO> createEmployee(
             @RequestBody com.hrpayroll.employee.dto.CreateEmployeeWithUserRequest request,
             @RequestHeader("X-User-Id") Long createdByUserId,
             @RequestHeader("X-User-Role") String createdByRole) {
         try {
-            Employee created = employeeService.createEmployeeWithUser(request, createdByUserId, createdByRole);
+            Employee created = employeeService.createEmployee(request, createdByUserId, createdByRole);
             EmployeeDTO dto = mapToDTO(created);
             return ResponseEntity.status(HttpStatus.CREATED).body(dto);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
-
-    /**
-     * Create employee for existing user
-     * Use this when user account already exists
-     */
-    @PostMapping
-    public ResponseEntity<Employee> createEmployee(
-            @RequestBody Employee employee) {
-        try {
-            Employee created = employeeService.createEmployee(employee);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            // Let framework handle the error details
+            throw e;
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable("id") Long id) {
         try {
             Employee employee = employeeService.getEmployeeById(id);
             EmployeeDTO dto = mapToDTO(employee);
@@ -86,7 +76,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<EmployeeDTO> getEmployeeByUserId(@PathVariable Long userId) {
+    public ResponseEntity<EmployeeDTO> getEmployeeByUserId(@PathVariable("userId") Long userId) {
         try {
             Employee employee = employeeService.getEmployeeByUserId(userId);
             EmployeeDTO dto = mapToDTO(employee);
@@ -107,7 +97,7 @@ public class EmployeeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EmployeeDTO> updateEmployee(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestBody EmployeeDTO employeeDTO,
             @RequestHeader("X-User-Id") Long updatedByUserId,
             @RequestHeader("X-User-Role") String updatedByRole) {
@@ -122,7 +112,7 @@ public class EmployeeController {
 
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivateEmployee(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam EmployeeStatus status,
             @RequestHeader("X-User-Id") Long deactivatedByUserId) {
         try {
@@ -134,7 +124,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/designation")
-    public ResponseEntity<DesignationDTO> getDesignationByEmployeeId(@PathVariable Long id) {
+    public ResponseEntity<DesignationDTO> getDesignationByEmployeeId(@PathVariable("id") Long id) {
         try {
             Designation designation = employeeService.getDesignationByEmployeeId(id);
             DesignationDTO dto = mapToDTO(designation);
@@ -145,14 +135,16 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/role")
-    public ResponseEntity<String> getEmployeeRole(@PathVariable Long id) {
+    public ResponseEntity<String> getEmployeeRole(@PathVariable("id") Long id) {
         try {
-            // This endpoint is used by Attendance Service to determine who can approve leaves
+            // This endpoint is used by Attendance Service to determine who can approve
+            // leaves
             // In production, you'd call Authentication Service to get the role
             // For now, returning a default - this should be enhanced to call Auth Service
             employeeService.getEmployeeById(id); // Verify employee exists
             // Note: This is a simplified implementation
-            // In production, you'd need to call Authentication Service to get the actual role
+            // In production, you'd need to call Authentication Service to get the actual
+            // role
             return ResponseEntity.ok("EMPLOYEE"); // Default, should be enhanced
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -160,7 +152,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/email")
-    public ResponseEntity<String> getEmployeeEmail(@PathVariable Long id) {
+    public ResponseEntity<String> getEmployeeEmail(@PathVariable("id") Long id) {
         try {
             // This endpoint is used by Notification Service
             // In production, you'd get email from User in Authentication Service
@@ -174,7 +166,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/audience/{audience}")
-    public ResponseEntity<List<Long>> getEmployeeIdsByAudience(@PathVariable String audience) {
+    public ResponseEntity<List<Long>> getEmployeeIdsByAudience(@PathVariable("audience") String audience) {
         try {
             // This endpoint is used by Notification Service for announcements
             // Returns employee IDs based on target audience (ALL, HR, EMPLOYEE)
@@ -217,7 +209,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/designations/{id}")
-    public ResponseEntity<DesignationDTO> getDesignationById(@PathVariable Long id) {
+    public ResponseEntity<DesignationDTO> getDesignationById(@PathVariable("id") Long id) {
         try {
             Designation designation = designationService.getDesignationById(id);
             DesignationDTO dto = mapToDTO(designation);
@@ -229,7 +221,7 @@ public class EmployeeController {
 
     @PutMapping("/designations/{id}")
     public ResponseEntity<DesignationDTO> updateDesignation(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestBody Designation designation) {
         try {
             Designation updated = designationService.updateDesignation(id, designation);
@@ -241,7 +233,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/designations/{id}/deactivate")
-    public ResponseEntity<Void> deactivateDesignation(@PathVariable Long id) {
+    public ResponseEntity<Void> deactivateDesignation(@PathVariable("id") Long id) {
         try {
             designationService.deactivateDesignation(id);
             return ResponseEntity.ok().build();
@@ -278,4 +270,3 @@ public class EmployeeController {
         return dto;
     }
 }
-

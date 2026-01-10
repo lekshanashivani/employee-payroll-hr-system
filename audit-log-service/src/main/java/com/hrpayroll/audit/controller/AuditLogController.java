@@ -32,8 +32,7 @@ public class AuditLogController {
                     request.getTargetId(),
                     request.getDescription(),
                     request.getOldValues(),
-                    request.getNewValues()
-            );
+                    request.getNewValues());
             return ResponseEntity.status(HttpStatus.CREATED).body(auditLog);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -41,7 +40,7 @@ public class AuditLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuditLog> getAuditLogById(@PathVariable Long id) {
+    public ResponseEntity<AuditLog> getAuditLogById(@PathVariable("id") Long id) {
         try {
             AuditLog auditLog = auditLogService.getAuditLogById(id);
             return ResponseEntity.ok(auditLog);
@@ -51,25 +50,25 @@ public class AuditLogController {
     }
 
     @GetMapping("/performed-by/{performedBy}")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByPerformedBy(@PathVariable Long performedBy) {
+    public ResponseEntity<List<AuditLog>> getAuditLogsByPerformedBy(@PathVariable("performedBy") Long performedBy) {
         List<AuditLog> auditLogs = auditLogService.getAuditLogsByPerformedBy(performedBy);
         return ResponseEntity.ok(auditLogs);
     }
 
     @GetMapping("/target/{targetId}")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByTargetId(@PathVariable Long targetId) {
+    public ResponseEntity<List<AuditLog>> getAuditLogsByTargetId(@PathVariable("targetId") Long targetId) {
         List<AuditLog> auditLogs = auditLogService.getAuditLogsByTargetId(targetId);
         return ResponseEntity.ok(auditLogs);
     }
 
     @GetMapping("/action/{action}")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByAction(@PathVariable String action) {
+    public ResponseEntity<List<AuditLog>> getAuditLogsByAction(@PathVariable("action") String action) {
         List<AuditLog> auditLogs = auditLogService.getAuditLogsByAction(action);
         return ResponseEntity.ok(auditLogs);
     }
 
     @GetMapping("/service/{serviceName}")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByServiceName(@PathVariable String serviceName) {
+    public ResponseEntity<List<AuditLog>> getAuditLogsByServiceName(@PathVariable("serviceName") String serviceName) {
         List<AuditLog> auditLogs = auditLogService.getAuditLogsByServiceName(serviceName);
         return ResponseEntity.ok(auditLogs);
     }
@@ -85,20 +84,60 @@ public class AuditLogController {
         private Map<String, Object> newValues;
 
         // Getters and Setters
-        public String getAction() { return action; }
-        public void setAction(String action) { this.action = action; }
-        public String getServiceName() { return serviceName; }
-        public void setServiceName(String serviceName) { this.serviceName = serviceName; }
-        public Long getPerformedBy() { return performedBy; }
-        public void setPerformedBy(Long performedBy) { this.performedBy = performedBy; }
-        public Long getTargetId() { return targetId; }
-        public void setTargetId(Long targetId) { this.targetId = targetId; }
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        public Map<String, Object> getOldValues() { return oldValues; }
-        public void setOldValues(Map<String, Object> oldValues) { this.oldValues = oldValues; }
-        public Map<String, Object> getNewValues() { return newValues; }
-        public void setNewValues(Map<String, Object> newValues) { this.newValues = newValues; }
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public Long getPerformedBy() {
+            return performedBy;
+        }
+
+        public void setPerformedBy(Long performedBy) {
+            this.performedBy = performedBy;
+        }
+
+        public Long getTargetId() {
+            return targetId;
+        }
+
+        public void setTargetId(Long targetId) {
+            this.targetId = targetId;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public Map<String, Object> getOldValues() {
+            return oldValues;
+        }
+
+        public void setOldValues(Map<String, Object> oldValues) {
+            this.oldValues = oldValues;
+        }
+
+        public Map<String, Object> getNewValues() {
+            return newValues;
+        }
+
+        public void setNewValues(Map<String, Object> newValues) {
+            this.newValues = newValues;
+        }
     }
 }
-

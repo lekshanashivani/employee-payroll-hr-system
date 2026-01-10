@@ -11,38 +11,26 @@ spring:
           uri: lb://authentication-service
           predicates:
             - Path=/api/auth/**
-          filters:
-            - StripPrefix=1
         - id: employee-service
           uri: lb://employee-service
           predicates:
             - Path=/api/employees/**
-          filters:
-            - StripPrefix=1
         - id: attendance-service
           uri: lb://attendance-service
           predicates:
             - Path=/api/attendance/**
-          filters:
-            - StripPrefix=1
         - id: payroll-service
           uri: lb://payroll-service
           predicates:
             - Path=/api/payroll/**
-          filters:
-            - StripPrefix=1
         - id: notification-service
           uri: lb://notification-service
           predicates:
             - Path=/api/notifications/**
-          filters:
-            - StripPrefix=1
         - id: audit-log-service
           uri: lb://audit-log-service
           predicates:
             - Path=/api/audit-logs/**
-          filters:
-            - StripPrefix=1
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
 

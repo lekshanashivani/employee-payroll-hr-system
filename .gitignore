@@ -34,3 +34,172 @@ application-local.yml
 application-dev.yml
 application-prod.yml
 
+# Angular / Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Angular build outputs
+frontend/dist/
+frontend/out-tsc/
+frontend/bazel-out/
+frontend/.angular/
+frontend/.angular/cache/
+
+# TypeScript
+*.tsbuildinfo
+*.js.map
+
+# Testing
+frontend/coverage/
+frontend/.karma/
+frontend/.nyc_output/
+frontend/__screenshots__/
+
+# IDEs and editors
+frontend/.idea/
+frontend/.vscode/
+frontend/*.swp
+frontend/*.swo
+frontend/*~
+frontend/.sass-cache/
+
+# OS generated files
+frontend/.DS_Store
+frontend/Thumbs.db
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Package manager lock files (optional - some teams prefer to commit these)
+# frontend/package-lock.json
+# frontend/yarn.lock
+# frontend/pnpm-lock.yaml
+frontend/connect.lock
+frontend/typings/
+
+# Temporary files
+frontend/tmp/
+frontend/temp/
+*.tmp
+*.temp
+
+# Logs
+frontend/logs/
+frontend/*.log
+
+# Optional npm cache directory
+frontend/.npm
+
+# Optional eslint cache
+frontend/.eslintcache
+
+# Optional stylelint cache
+frontend/.stylelintcache
+
+# Microbundle cache
+frontend/.rpt2_cache/
+frontend/.rts2_cache_cjs/
+frontend/.rts2_cache_es/
+frontend/.rts2_cache_umd/
+
+# Optional REPL history
+frontend/.node_repl_history
+
+# Output of 'npm pack'
+frontend/*.tgz
+
+# Yarn Integrity file
+frontend/.yarn-integrity
+
+# parcel-bundler cache
+frontend/.cache
+frontend/.parcel-cache
+
+# Next.js (if ever used)
+frontend/.next/
+frontend/out/
+
+# Nuxt.js (if ever used)
+frontend/.nuxt/
+frontend/.output/
+
+# Vite (if ever used)
+frontend/dist-ssr/
+frontend/*.local
+
+# Rollup (if ever used)
+frontend/rollup.config.js.timestamp-*
+
+# Serverless directories
+frontend/.serverless/
+
+# FuseBox cache
+frontend/.fusebox/
+
+# DynamoDB Local files
+frontend/.dynamodb/
+
+# TernJS port file
+frontend/.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+frontend/.vscode-test
+
+# yarn v2
+frontend/.yarn/cache
+frontend/.yarn/unplugged
+frontend/.yarn/build-state.yml
+frontend/.yarn/install-state.gz
+frontend/.pnp.*
+
+# ----------------------------------------------------------------------
+# Additional Unnecessary Files & Generalizations
+# ----------------------------------------------------------------------
+
+# Backups and Dumps
+frontend_backup/
+*_backup/
+*.bak
+*.old
+*.orig
+*.dump
+*.sql
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.gz
+
+# Java generic
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# NetBeans
+nbproject/
+nb-configuration.xml
+build/
+
+# Eclipse
+.metadata/
+
+# VS Code generic
+.history/
+
+# Generic Build Outputs
+dist/
+build/
+out/
+coverage/
+
+# OS Files generic
+Desktop.ini
+$RECYCLE.BIN/
