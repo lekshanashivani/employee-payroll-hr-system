@@ -22,6 +22,10 @@ import { finalize } from 'rxjs/operators';
       </div>
     </div>
 
+    <div *ngIf="!employee" class="loading-state">
+      Loading employee details...
+    </div>
+
     <div class="form-container" *ngIf="employee">
       <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
         
@@ -188,10 +192,9 @@ import { finalize } from 'rxjs/operators';
     }
 
     .form-control[readonly] {
-      background: transparent;
-      border-color: transparent;
-      padding-left: 0;
-      font-weight: 500;
+      background: var(--bg-secondary);
+      opacity: 0.7;
+      cursor: default;
     }
 
     .form-actions {
@@ -255,6 +258,7 @@ export class EmployeeDetailComponent implements OnInit {
         next: (emp) => {
           this.employee = emp;
           this.patchForm();
+          this.cdr.detectChanges();
         }
       });
 
