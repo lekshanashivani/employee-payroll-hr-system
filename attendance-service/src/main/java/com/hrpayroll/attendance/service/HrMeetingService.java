@@ -43,7 +43,8 @@ public class HrMeetingService {
         return meetingRequestRepository.save(meetingRequest);
     }
 
-    public HrMeetingRequest approveMeetingRequest(Long meetingRequestId, LocalDateTime scheduledDateTime, Long approvedByUserId) {
+    public HrMeetingRequest approveMeetingRequest(Long meetingRequestId, LocalDateTime scheduledDateTime,
+            Long approvedByUserId) {
         HrMeetingRequest meetingRequest = meetingRequestRepository.findById(meetingRequestId)
                 .orElseThrow(() -> new RuntimeException("Meeting request not found"));
 
@@ -154,5 +155,20 @@ public class HrMeetingService {
     public List<HrMeetingRequest> getPendingMeetingRequests() {
         return meetingRequestRepository.findByStatus(MeetingStatus.PENDING);
     }
-}
 
+    public List<HrMeetingRequest> getScheduledMeetingRequests() {
+        return meetingRequestRepository.findByStatus(MeetingStatus.APPROVED);
+    }
+
+    public HrMeetingRequest concludeMeetingRequest(Long meetingRequestId) {
+        HrMeetingRequest meetingRequest = meetingRequestRepository.findById(meetingRequestId)
+                .orElseThrow(() -> new RuntimeException("Meeting request not found"));
+
+        if (meetingRequest.getStatus() != MeetingStatus.APPROVED) {
+            throw new RuntimeException("Meeting is not in APPROVED (Scheduled) state");
+        }
+
+        meetingRequest.setStatus(MeetingStatus.CONCLUDED);
+        return meetingRequestRepository.save(meetingRequest);
+    }
+}

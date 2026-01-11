@@ -14,6 +14,7 @@ import { finalize } from 'rxjs/operators';
     <!-- Admin View: Pending Meetings -->
     <div *ngIf="isHr()" class="card admin-panel">
       <h3>Pending HR Meeting Requests</h3>
+      <!-- ... (pending table code) ... -->
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -36,6 +37,35 @@ import { finalize } from 'rxjs/operators';
             </tr>
             <tr *ngIf="pendingRequests.length === 0">
               <td colspan="4" class="empty-state">No pending meeting requests.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">Scheduled Meetings</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Subject</th>
+              <th>Scheduled Time</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of scheduledRequests">
+              <td>{{ req.employeeId }}</td>
+              <td>{{ req.subject }}<br><small class="text-muted">{{ req.description }}</small></td>
+              <td><strong>{{ req.scheduledDateTime | date:'medium' }}</strong></td>
+              <td><span class="badge approved">Scheduled</span></td>
+              <td>
+                <button (click)="conclude(req)" class="btn-sm status-badge">Mark Concluded</button>
+              </td>
+            </tr>
+            <tr *ngIf="scheduledRequests.length === 0">
+              <td colspan="5" class="empty-state">No scheduled meetings.</td>
             </tr>
           </tbody>
         </table>
@@ -128,6 +158,8 @@ import { finalize } from 'rxjs/operators';
     .btn-icon.approve { background: var(--success-bg); color: var(--success-color); }
     .btn-icon.reject { background: var(--error-bg); color: var(--error-color); }
     .btn-icon:hover { opacity: 0.8; }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--text-secondary); color: white; border:none; border-radius: 4px; cursor: pointer; }
+    .btn-sm:hover { opacity: 0.9; }
   `]
 })
 export class MeetingRequestComponent implements OnInit {
@@ -164,6 +196,7 @@ export class MeetingRequestComponent implements OnInit {
 
       if (this.isHr()) {
         this.loadPendingRequests();
+        this.loadScheduledRequests();
       }
     }
   }
@@ -186,6 +219,16 @@ export class MeetingRequestComponent implements OnInit {
     this.attendanceService.getAllPendingMeetingRequests().subscribe({
       next: (data) => {
         this.pendingRequests = data;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  scheduledRequests: HrMeetingRequest[] = [];
+  loadScheduledRequests() {
+    this.attendanceService.getAllScheduledMeetingRequests().subscribe({
+      next: (data) => {
+        this.scheduledRequests = data;
         this.cdr.detectChanges();
       }
     });
@@ -231,6 +274,7 @@ export class MeetingRequestComponent implements OnInit {
       .subscribe({
         next: (updated) => {
           this.pendingRequests = this.pendingRequests.filter(r => r.id !== req.id);
+          this.loadScheduledRequests();
           this.cdr.detectChanges();
           alert(`Meeting Scheduled for ${new Date(scheduledTime).toLocaleString()}`);
         }
@@ -248,5 +292,16 @@ export class MeetingRequestComponent implements OnInit {
           this.cdr.detectChanges();
         }
       });
+  }
+
+  conclude(req: HrMeetingRequest) {
+    if (!confirm('Mark this meeting as concluded?')) return;
+
+    this.attendanceService.concludeMeetingRequest(req.id).subscribe({
+      next: () => {
+        this.loadScheduledRequests();
+        alert('Meeting concluded and archived.');
+      }
+    });
   }
 }

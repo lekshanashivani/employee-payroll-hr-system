@@ -81,11 +81,19 @@ export class AttendanceService {
         return this.api.get<HrMeetingRequest[]>('/attendance/hr-meetings/pending');
     }
 
+    getAllScheduledMeetingRequests(): Observable<HrMeetingRequest[]> {
+        return this.api.get<HrMeetingRequest[]>('/attendance/hr-meetings/scheduled');
+    }
+
     approveMeetingRequest(requestId: number, approverId: number, scheduledDateTime: string): Observable<HrMeetingRequest> {
         return this.api.put<HrMeetingRequest>(`/attendance/hr-meetings/${requestId}/approve?scheduledDateTime=${scheduledDateTime}`, {});
     }
 
     rejectMeetingRequest(requestId: number, rejectorId: number, reason: string): Observable<HrMeetingRequest> {
         return this.api.put<HrMeetingRequest>(`/attendance/hr-meetings/${requestId}/reject?rejectionReason=${encodeURIComponent(reason)}`, {});
+    }
+
+    concludeMeetingRequest(requestId: number): Observable<HrMeetingRequest> {
+        return this.api.put<HrMeetingRequest>(`/attendance/hr-meetings/${requestId}/conclude`, {});
     }
 }

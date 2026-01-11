@@ -13,7 +13,7 @@ export interface Notification {
 export interface Announcement {
     id: number;
     title: string;
-    message: string;
+    content: string;
     createdAt: string;
 }
 
@@ -30,5 +30,13 @@ export class NotificationService {
 
     getActiveAnnouncements(): Observable<Announcement[]> {
         return this.api.get<Announcement[]>('/notifications/announcements');
+    }
+
+    createAnnouncement(announcement: any): Observable<Announcement> {
+        return this.api.post<Announcement>('/notifications/announcements', announcement);
+    }
+
+    deleteAnnouncement(id: number): Observable<void> {
+        return this.api.delete<void>(`/notifications/announcements/${id}`);
     }
 }

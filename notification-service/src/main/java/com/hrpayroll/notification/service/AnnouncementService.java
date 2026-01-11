@@ -45,14 +45,14 @@ public class AnnouncementService {
         // Send emails if flag is set
         if (announcement.getSendEmail()) {
             try {
-                List<Long> targetEmployeeIds = employeeClient.getEmployeeIdsByAudience(announcement.getTargetAudience().name());
+                List<Long> targetEmployeeIds = employeeClient
+                        .getEmployeeIdsByAudience(announcement.getTargetAudience().name());
                 for (Long employeeId : targetEmployeeIds) {
                     notificationService.createNotification(
                             employeeId,
                             announcement.getTitle(),
                             announcement.getContent(),
-                            com.hrpayroll.notification.entity.NotificationType.ANNOUNCEMENT
-                    );
+                            com.hrpayroll.notification.entity.NotificationType.ANNOUNCEMENT);
                 }
             } catch (Exception e) {
                 // Log but don't fail
@@ -89,5 +89,8 @@ public class AnnouncementService {
         return announcementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Announcement not found"));
     }
-}
 
+    public void deleteAnnouncement(Long id) {
+        announcementRepository.deleteById(id);
+    }
+}

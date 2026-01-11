@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { EmployeeService } from '../../core/services/employee.service';
 import { AuditLogService } from '../../core/services/audit-log.service';
@@ -10,7 +11,7 @@ import { AuditLog } from '../../core/models/audit-log.model';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="dashboard-header">
       <h1>Dashboard</h1>
@@ -19,86 +20,101 @@ import { AuditLog } from '../../core/models/audit-log.model';
 
     <!-- Admin View: Stats Grid -->
     <div class="stats-grid" *ngIf="isAdmin()">
-      <div class="stat-card">
-        <h3>Total Employees</h3>
-        <p class="value">{{ stats.total }}</p>
-      </div>
-      <div class="stat-card highlight-green">
-        <h3>Active</h3>
-        <p class="value">{{ stats.active }}</p>
-      </div>
-      <div class="stat-card highlight-red">
-        <h3>Inactive</h3>
-        <p class="value">{{ stats.inactive }}</p>
-      </div>
+        <div class="stat-card">
+            <h3>Total Employees</h3>
+            <p class="value">{{ stats.total }}</p>
+        </div>
+        <div class="stat-card highlight-green">
+            <h3>Active</h3>
+            <p class="value">{{ stats.active }}</p>
+        </div>
+        <div class="stat-card highlight-red">
+            <h3>Inactive</h3>
+            <p class="value">{{ stats.inactive }}</p>
+        </div>
     </div>
 
     <!-- Employee View: Personal Stats -->
     <div class="stats-grid" *ngIf="!isAdmin() && myProfile">
-       <div class="stat-card">
-         <h3>My Department</h3>
-         <p class="value text-sm">{{ myProfile.department }}</p>
-       </div>
-       <div class="stat-card">
-         <h3>My Designation</h3>
-         <p class="value text-sm">{{ myProfile.designationName }}</p>
-       </div>
-       <div class="stat-card" [class.highlight-green]="myProfile.status === 'ACTIVE'">
-         <h3>My Status</h3>
-         <p class="value">{{ myProfile.status }}</p>
-       </div>
+        <div class="stat-card">
+            <h3>My Department</h3>
+            <p class="value text-sm">{{ myProfile.department }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>My Designation</h3>
+            <p class="value text-sm">{{ myProfile.designationName }}</p>
+        </div>
+        <div class="stat-card" [class.highlight-green]="myProfile.status === 'ACTIVE'">
+            <h3>My Status</h3>
+            <p class="value">{{ myProfile.status }}</p>
+        </div>
     </div>
 
     <!-- Announcements Section -->
     <div class="section-container" style="margin-bottom: 2rem;">
-      <div class="section-header">
-        <h2>📢 Announcements</h2>
-      </div>
-      
-      <div class="activity-list">
-        <div class="activity-item" *ngFor="let ann of announcements">
-          <div class="activity-content">
-            <p class="activity-title" style="margin-bottom: 0.5rem;">
-              <span class="action" style="color: var(--primary-color);">{{ ann.title }}</span>
-              <span class="time">{{ ann.createdAt | date:'short' }}</span>
-            </p>
-            <p class="activity-desc">{{ ann.message }}</p>
-          </div>
+        <div class="section-header">
+            <h2>📢 Announcements</h2>
+            <button *ngIf="canCreateAnnouncement()" (click)="toggleAnnouncementForm()" class="btn-primary">
+                {{ showAnnouncementForm ? 'Cancel' : 'New Announcement' }}
+            </button>
         </div>
-        
-        <div *ngIf="announcements.length === 0" class="empty-state">
-          No active announcements.
+
+        <!-- Create Announcement Form -->
+        <div *ngIf="showAnnouncementForm" class="announcement-form">
+            <input type="text" [(ngModel)]="newAnnouncement.title" placeholder="Title" class="form-control" style="margin-bottom: 0.5rem;">
+            <textarea [(ngModel)]="newAnnouncement.content" placeholder="Message" class="form-control" rows="3" style="margin-bottom: 0.5rem;"></textarea>
+            <div class="form-actions">
+                <button (click)="postAnnouncement()" [disabled]="!newAnnouncement.title || !newAnnouncement.content" class="btn-primary">Post</button>
+            </div>
         </div>
-      </div>
+
+        <div class="activity-list">
+            <div class="activity-item" *ngFor="let ann of announcements">
+                <div class="activity-content">
+                    <p class="activity-title" style="margin-bottom: 0.5rem;">
+                        <span class="action" style="color: var(--primary-color);">
+                            {{ ann.title }}
+                            <button *ngIf="canManageAnnouncements()" (click)="deleteAnnouncement(ann.id)" class="btn-danger">Delete</button>
+                        </span>
+                        <span class="time">{{ ann.createdAt | date:'short' }}</span>
+                    </p>
+                    <p class="activity-desc">{{ ann.content }}</p>
+                </div>
+            </div>
+
+            <div *ngIf="announcements.length === 0" class="empty-state">
+                No active announcements.
+            </div>
+        </div>
     </div>
 
     <!-- Admin View: Recent Activity -->
     <div class="section-container" *ngIf="isAdmin()">
-      <div class="section-header">
-        <h2>Recent Activity</h2>
-      </div>
-      
-      <div class="activity-list">
-        <div class="activity-item" *ngFor="let log of recentActivity">
-          <div class="activity-icon">
-            <span class="dot"></span>
-          </div>
-          <div class="activity-content">
-            <p class="activity-title">
-              <span class="action">{{ formatAction(log.action) }}</span>
-              <span class="time">{{ log.createdAt | date:'short' }}</span>
-            </p>
-            <p class="activity-desc">
-              {{ log.description }}
-              <span class="performed-by">by {{ resolveUserName(log.performedBy) }}</span>
-            </p>
-          </div>
+        <div class="section-header">
+            <h2>Recent Activity</h2>
         </div>
-        
-        <div *ngIf="recentActivity.length === 0" class="empty-state">
-          No recent activity found.
+
+        <div class="activity-list">
+            <div class="activity-item" *ngFor="let log of recentActivity">
+                <div class="activity-icon">
+                    <span class="dot"></span>
+                </div>
+                <div class="activity-content">
+                    <p class="activity-title">
+                        <span class="action">{{ formatAction(log.action) }}</span>
+                        <span class="time">{{ log.createdAt | date:'short' }}</span>
+                    </p>
+                    <p class="activity-desc">
+                        {{ log.description }}
+                        <span class="performed-by">by {{ resolveUserName(log.performedBy) }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div *ngIf="recentActivity.length === 0" class="empty-state">
+                No recent activity found.
+            </div>
         </div>
-      </div>
     </div>
   `,
   styles: [`
@@ -107,18 +123,18 @@ import { AuditLog } from '../../core/models/audit-log.model';
     .dashboard-header p { color: var(--text-secondary); margin-top: 0.5rem; }
 
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
     }
 
     .stat-card {
-        background: var(--surface-color);
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      background: var(--surface-color);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
     .stat-card h3 { margin: 0; font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
     .stat-card .value { margin: 0.5rem 0 0 0; font-size: 2rem; font-weight: 600; color: var(--text-primary); }
@@ -127,10 +143,10 @@ import { AuditLog } from '../../core/models/audit-log.model';
     .highlight-red .value { color: #EF4444; }
 
     .section-container {
-        background: var(--surface-color);
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        padding: 1.5rem;
+      background: var(--surface-color);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
     }
     .section-header h2 { margin: 0 0 1.5rem 0; font-size: 1.25rem; color: var(--text-primary); }
 
@@ -149,6 +165,13 @@ import { AuditLog } from '../../core/models/audit-log.model';
     .performed-by { font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.5rem; font-style: italic; }
     
     .empty-state { text-align: center; color: var(--text-secondary); padding: 1rem; }
+
+    .announcement-form { margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 6px; }
+    .form-control { width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--surface-color); color: var(--text-primary); }
+    .btn-primary { padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-danger { padding: 0.25rem 0.5rem; background: #EF4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; margin-left: 1rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .section-header h2 { margin: 0; }
   `]
 })
 export class DashboardComponent implements OnInit {
@@ -157,6 +180,9 @@ export class DashboardComponent implements OnInit {
   announcements: Announcement[] = [];
   userMap = new Map<number, string>();
   myProfile: Employee | null = null;
+
+  showAnnouncementForm = false;
+  newAnnouncement = { title: '', content: '' };
 
   constructor(
     private authService: AuthService,
@@ -189,6 +215,11 @@ export class DashboardComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.authService.currentUser()?.role === 'ADMIN';
+  }
+
+  canManageAnnouncements(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'ADMIN' || role === 'HR'; // Allow HR to delete too
   }
 
   getUserName(): string {
@@ -243,5 +274,44 @@ export class DashboardComponent implements OnInit {
 
   resolveUserName(userId: number): string {
     return this.userMap.get(userId) || `User ID: ${userId}`;
+  }
+
+  canCreateAnnouncement(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'ADMIN' || role === 'HR';
+  }
+
+  toggleAnnouncementForm() {
+    this.showAnnouncementForm = !this.showAnnouncementForm;
+  }
+
+  postAnnouncement() {
+    if (!this.newAnnouncement.title || !this.newAnnouncement.content) return;
+
+    const payload = {
+      ...this.newAnnouncement,
+      targetAudience: 'ALL', // Default for now
+      sendEmail: false
+    };
+
+    this.notificationService.createAnnouncement(payload).subscribe({
+      next: () => {
+        this.showAnnouncementForm = false;
+        this.newAnnouncement = { title: '', content: '' };
+        this.loadAnnouncements(); // Refresh list
+      },
+      error: (err) => console.error('Failed to post announcement', err)
+    });
+  }
+
+  deleteAnnouncement(id: number) {
+    if (confirm('Are you sure you want to delete this announcement?')) {
+      this.notificationService.deleteAnnouncement(id).subscribe({
+        next: () => {
+          this.loadAnnouncements();
+        },
+        error: (err) => console.error('Failed to delete announcement', err)
+      });
+    }
   }
 }

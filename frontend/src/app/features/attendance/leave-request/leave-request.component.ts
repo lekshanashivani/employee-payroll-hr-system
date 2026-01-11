@@ -12,7 +12,7 @@ import { finalize } from 'rxjs/operators';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <!-- Admin View: Pending Requests -->
-    <div *ngIf="isAdmin()" class="card admin-panel">
+    <div *ngIf="canApprove" class="card admin-panel">
       <h3>Pending Leave Requests</h3>
       <div class="table-container">
         <table class="data-table">
@@ -47,7 +47,7 @@ import { finalize } from 'rxjs/operators';
     <!-- Employee View: Request Form (Only if not Admin or if Admin wants to request for themselves?) 
          For simplicity, let's keep the User layout for everyone, but Admins see the panel above too. -->
     
-    <div *ngIf="!isAdmin()" class="split-layout" style="margin-top: 2rem;">
+    <div *ngIf="canRequest" class="split-layout" style="margin-top: 2rem;">
       <!-- Left: Request Form -->
       <div class="card">
         <h3>Request Leave</h3>
@@ -172,14 +172,22 @@ export class LeaveRequestComponent implements OnInit {
         this.loadMyRequests();
       }
 
-      if (this.isAdmin()) {
+      if (this.canApprove) {
         this.loadPendingRequests();
       }
     }
   }
 
-  isAdmin(): boolean {
-    return this.authService.currentUser()?.role === 'ADMIN';
+  // Check if user has permission to approve/reject leaves (Admin or HR)
+  get canApprove(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'ADMIN' || role === 'HR';
+  }
+
+  // Check if user can request leave (Everyone except purely admin users if we wanted, but let's allow everyone)
+  // Actually, usually Admin accounts are system accounts. But let's allow all authentic employees.
+  get canRequest(): boolean {
+    return !!this.currentEmployeeId;
   }
 
   loadMyRequests() {

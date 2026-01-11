@@ -41,12 +41,14 @@ import { AuthService } from '../../../core/services/auth.service';
         </a>
 
         <!-- Admin Only Management Links -->
-        <ng-container *ngIf="isAdmin()">
+        <ng-container *ngIf="canManageEmployees()">
           <a routerLink="/employees" routerLinkActive="active" class="nav-item">
             <span class="icon">👥</span>
             Employees
           </a>
+        </ng-container>
 
+        <ng-container *ngIf="isAdmin()">
           <a routerLink="/designations" routerLinkActive="active" class="nav-item">
             <span class="icon">🏷️</span>
             Designations
@@ -164,6 +166,14 @@ export class SidebarComponent {
 
   isAdmin(): boolean {
     return this.authService.currentUser()?.role === 'ADMIN';
+  }
+
+  isHr(): boolean {
+    return this.authService.currentUser()?.role === 'HR';
+  }
+
+  canManageEmployees(): boolean {
+    return this.isAdmin() || this.isHr();
   }
 
   getEmployeeId(): number | undefined {

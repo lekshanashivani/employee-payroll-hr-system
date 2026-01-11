@@ -282,9 +282,12 @@ export class EmployeeDetailComponent implements OnInit {
     // Admin can edit anyone
     if (user.role === 'ADMIN') return true;
 
-    // Employees can edit their own profile
-    // We compare user.employeeId (from token) with this.employee.id (from route/data)
-    return user.employeeId === this.employee.id;
+    // HR can edit others, but NOT themselves
+    if (user.role === 'HR') {
+      return user.employeeId !== this.employee.id;
+    }
+
+    return false;
   }
 
   deactivateEmployee() {

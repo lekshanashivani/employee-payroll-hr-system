@@ -176,6 +176,12 @@ public class AttendanceController {
         return ResponseEntity.ok(meetings);
     }
 
+    @GetMapping("/hr-meetings/scheduled")
+    public ResponseEntity<List<HrMeetingRequest>> getScheduledMeetingRequests() {
+        List<HrMeetingRequest> meetings = hrMeetingService.getScheduledMeetingRequests();
+        return ResponseEntity.ok(meetings);
+    }
+
     @PutMapping("/hr-meetings/{id}/approve")
     public ResponseEntity<HrMeetingRequest> approveMeetingRequest(
             @PathVariable Long id,

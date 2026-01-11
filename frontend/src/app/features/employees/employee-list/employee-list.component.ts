@@ -12,7 +12,7 @@ import { Employee } from '../../../core/models/employee.model';
   template: `
     <div class="page-header">
       <h2>Employees</h2>
-      <a routerLink="/employees/create" class="btn-primary" *ngIf="isAdmin()">Add Employee</a>
+      <a routerLink="/employees/create" class="btn-primary" *ngIf="canManageEmployees()">Add Employee</a>
     </div>
 
     <div class="table-container">
@@ -162,6 +162,11 @@ export class EmployeeListComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.authService.currentUser()?.role === 'ADMIN';
+  }
+
+  canManageEmployees(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'ADMIN' || role === 'HR';
   }
 
   ngOnInit() {

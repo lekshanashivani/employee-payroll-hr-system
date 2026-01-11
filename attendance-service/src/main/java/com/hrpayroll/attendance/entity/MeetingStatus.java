@@ -6,6 +6,6 @@ package com.hrpayroll.attendance.entity;
 public enum MeetingStatus {
     PENDING,
     APPROVED,
-    REJECTED
+    REJECTED,
+    CONCLUDED
 }
-

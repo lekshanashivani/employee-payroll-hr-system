@@ -35,8 +35,7 @@ public class NotificationController {
                     request.getEmployeeId(),
                     "Payslip Generated",
                     "Your payslip for period " + request.getPayPeriod() + " has been generated.",
-                    com.hrpayroll.notification.entity.NotificationType.PAYROLL_GENERATED
-            );
+                    com.hrpayroll.notification.entity.NotificationType.PAYROLL_GENERATED);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -48,18 +47,17 @@ public class NotificationController {
             @RequestBody LeaveNotificationRequest request) {
         try {
             String subject = request.getApproved() ? "Leave Request Approved" : "Leave Request Rejected";
-            String body = request.getApproved() 
+            String body = request.getApproved()
                     ? "Your leave request has been approved."
                     : "Your leave request has been rejected. Reason: " + request.getRejectionReason();
-            
+
             notificationService.createNotification(
                     request.getEmployeeId(),
                     subject,
                     body,
-                    request.getApproved() 
+                    request.getApproved()
                             ? com.hrpayroll.notification.entity.NotificationType.LEAVE_APPROVED
-                            : com.hrpayroll.notification.entity.NotificationType.LEAVE_REJECTED
-            );
+                            : com.hrpayroll.notification.entity.NotificationType.LEAVE_REJECTED);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -74,15 +72,14 @@ public class NotificationController {
             String body = request.getApproved()
                     ? "Your HR meeting request has been approved. Scheduled time: " + request.getScheduledDateTime()
                     : "Your HR meeting request has been rejected.";
-            
+
             notificationService.createNotification(
                     request.getEmployeeId(),
                     subject,
                     body,
                     request.getApproved()
                             ? com.hrpayroll.notification.entity.NotificationType.HR_MEETING_APPROVED
-                            : com.hrpayroll.notification.entity.NotificationType.HR_MEETING_REJECTED
-            );
+                            : com.hrpayroll.notification.entity.NotificationType.HR_MEETING_REJECTED);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -134,18 +131,45 @@ public class NotificationController {
         }
     }
 
+    @DeleteMapping("/announcements/{id}")
+    public ResponseEntity<Void> deleteAnnouncement(@PathVariable Long id) {
+        try {
+            announcementService.deleteAnnouncement(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // DTOs
     public static class PayrollNotificationRequest {
         private Long employeeId;
         private Long payslipId;
         private String payPeriod;
 
-        public Long getEmployeeId() { return employeeId; }
-        public void setEmployeeId(Long employeeId) { this.employeeId = employeeId; }
-        public Long getPayslipId() { return payslipId; }
-        public void setPayslipId(Long payslipId) { this.payslipId = payslipId; }
-        public String getPayPeriod() { return payPeriod; }
-        public void setPayPeriod(String payPeriod) { this.payPeriod = payPeriod; }
+        public Long getEmployeeId() {
+            return employeeId;
+        }
+
+        public void setEmployeeId(Long employeeId) {
+            this.employeeId = employeeId;
+        }
+
+        public Long getPayslipId() {
+            return payslipId;
+        }
+
+        public void setPayslipId(Long payslipId) {
+            this.payslipId = payslipId;
+        }
+
+        public String getPayPeriod() {
+            return payPeriod;
+        }
+
+        public void setPayPeriod(String payPeriod) {
+            this.payPeriod = payPeriod;
+        }
     }
 
     public static class LeaveNotificationRequest {
@@ -154,14 +178,37 @@ public class NotificationController {
         private Boolean approved;
         private String rejectionReason;
 
-        public Long getEmployeeId() { return employeeId; }
-        public void setEmployeeId(Long employeeId) { this.employeeId = employeeId; }
-        public Long getLeaveRequestId() { return leaveRequestId; }
-        public void setLeaveRequestId(Long leaveRequestId) { this.leaveRequestId = leaveRequestId; }
-        public Boolean getApproved() { return approved; }
-        public void setApproved(Boolean approved) { this.approved = approved; }
-        public String getRejectionReason() { return rejectionReason; }
-        public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+        public Long getEmployeeId() {
+            return employeeId;
+        }
+
+        public void setEmployeeId(Long employeeId) {
+            this.employeeId = employeeId;
+        }
+
+        public Long getLeaveRequestId() {
+            return leaveRequestId;
+        }
+
+        public void setLeaveRequestId(Long leaveRequestId) {
+            this.leaveRequestId = leaveRequestId;
+        }
+
+        public Boolean getApproved() {
+            return approved;
+        }
+
+        public void setApproved(Boolean approved) {
+            this.approved = approved;
+        }
+
+        public String getRejectionReason() {
+            return rejectionReason;
+        }
+
+        public void setRejectionReason(String rejectionReason) {
+            this.rejectionReason = rejectionReason;
+        }
     }
 
     public static class HrMeetingNotificationRequest {
@@ -170,14 +217,36 @@ public class NotificationController {
         private Boolean approved;
         private LocalDateTime scheduledDateTime;
 
-        public Long getEmployeeId() { return employeeId; }
-        public void setEmployeeId(Long employeeId) { this.employeeId = employeeId; }
-        public Long getMeetingRequestId() { return meetingRequestId; }
-        public void setMeetingRequestId(Long meetingRequestId) { this.meetingRequestId = meetingRequestId; }
-        public Boolean getApproved() { return approved; }
-        public void setApproved(Boolean approved) { this.approved = approved; }
-        public LocalDateTime getScheduledDateTime() { return scheduledDateTime; }
-        public void setScheduledDateTime(LocalDateTime scheduledDateTime) { this.scheduledDateTime = scheduledDateTime; }
+        public Long getEmployeeId() {
+            return employeeId;
+        }
+
+        public void setEmployeeId(Long employeeId) {
+            this.employeeId = employeeId;
+        }
+
+        public Long getMeetingRequestId() {
+            return meetingRequestId;
+        }
+
+        public void setMeetingRequestId(Long meetingRequestId) {
+            this.meetingRequestId = meetingRequestId;
+        }
+
+        public Boolean getApproved() {
+            return approved;
+        }
+
+        public void setApproved(Boolean approved) {
+            this.approved = approved;
+        }
+
+        public LocalDateTime getScheduledDateTime() {
+            return scheduledDateTime;
+        }
+
+        public void setScheduledDateTime(LocalDateTime scheduledDateTime) {
+            this.scheduledDateTime = scheduledDateTime;
+        }
     }
 }
-

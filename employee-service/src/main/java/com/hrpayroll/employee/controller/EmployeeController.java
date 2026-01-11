@@ -135,12 +135,19 @@ public class EmployeeController {
             @RequestHeader("X-User-Role") String updatedByRole,
             @RequestHeader(value = "X-Employee-Id", required = false) String requestEmployeeIdStr) {
 
-        // Security Check: Allow ADMIN/HR OR the employee themselves
-        boolean isAdminOrHr = "ADMIN".equals(updatedByRole) || "HR".equals(updatedByRole);
-        boolean isSelf = requestEmployeeIdStr != null && !requestEmployeeIdStr.isEmpty()
-                && Long.parseLong(requestEmployeeIdStr) == id;
+        // Security Check:
+        boolean isAdmin = "ADMIN".equals(updatedByRole);
+        boolean isHr = "HR".equals(updatedByRole);
 
-        if (!isAdminOrHr && !isSelf) {
+        if (isAdmin) {
+            // Admin can update anyone
+        } else if (isHr) {
+            // HR can update others, but NOT themselves
+            if (requestEmployeeIdStr != null && Long.parseLong(requestEmployeeIdStr) == id) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } else {
+            // Employees cannot update anyone
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
