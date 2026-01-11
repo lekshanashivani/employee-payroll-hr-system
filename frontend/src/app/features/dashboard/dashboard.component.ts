@@ -63,6 +63,14 @@ import { AuditLog } from '../../core/models/audit-log.model';
         <div *ngIf="showAnnouncementForm" class="announcement-form">
             <input type="text" [(ngModel)]="newAnnouncement.title" placeholder="Title" class="form-control" style="margin-bottom: 0.5rem;">
             <textarea [(ngModel)]="newAnnouncement.content" placeholder="Message" class="form-control" rows="3" style="margin-bottom: 0.5rem;"></textarea>
+            
+            <!-- Email disabled
+            <div style="margin-bottom: 1rem; display: flex; align-items: center;">
+                <input type="checkbox" id="sendEmail" [(ngModel)]="newAnnouncement.sendEmail" style="margin-right: 0.5rem;">
+                <label for="sendEmail" style="color: var(--text-primary);">Send Email Notification</label>
+            </div>
+            -->
+
             <div class="form-actions">
                 <button (click)="postAnnouncement()" [disabled]="!newAnnouncement.title || !newAnnouncement.content" class="btn-primary">Post</button>
             </div>
@@ -182,7 +190,7 @@ export class DashboardComponent implements OnInit {
   myProfile: Employee | null = null;
 
   showAnnouncementForm = false;
-  newAnnouncement = { title: '', content: '' };
+  newAnnouncement = { title: '', content: '', sendEmail: false };
 
   constructor(
     private authService: AuthService,
@@ -290,14 +298,13 @@ export class DashboardComponent implements OnInit {
 
     const payload = {
       ...this.newAnnouncement,
-      targetAudience: 'ALL', // Default for now
-      sendEmail: false
+      targetAudience: 'ALL' // Default for now
     };
 
     this.notificationService.createAnnouncement(payload).subscribe({
       next: () => {
         this.showAnnouncementForm = false;
-        this.newAnnouncement = { title: '', content: '' };
+        this.newAnnouncement = { title: '', content: '', sendEmail: false };
         this.loadAnnouncements(); // Refresh list
       },
       error: (err) => console.error('Failed to post announcement', err)

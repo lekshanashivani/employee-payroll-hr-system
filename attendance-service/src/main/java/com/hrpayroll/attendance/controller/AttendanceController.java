@@ -208,4 +208,25 @@ public class AttendanceController {
         }
     }
 
+    @PutMapping("/hr-meetings/{id}/conclude")
+    public ResponseEntity<?> concludeMeetingRequest(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+
+        if (userRole == null) {
+            return ResponseEntity.badRequest().body("Missing X-User-Role header");
+        }
+
+        if (!"ADMIN".equals(userRole) && !"HR".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Role must be ADMIN or HR");
+        }
+
+        try {
+            HrMeetingRequest concluded = hrMeetingService.concludeMeetingRequest(id);
+            return ResponseEntity.ok(concluded);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
 }

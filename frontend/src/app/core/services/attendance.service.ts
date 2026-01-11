@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
+import { AuthService } from './auth.service';
 import { Attendance, CreateLeaveRequest, LeaveRequest, HrMeetingRequest, CreateMeetingRequest } from '../models/attendance.model';
 
 @Injectable({
@@ -8,7 +10,7 @@ import { Attendance, CreateLeaveRequest, LeaveRequest, HrMeetingRequest, CreateM
 })
 export class AttendanceService {
 
-    constructor(private api: ApiService) { }
+    constructor(private api: ApiService, private authService: AuthService) { }
 
     // Attendance
     markAttendance(employeeId: number): Observable<Attendance> {
@@ -94,6 +96,12 @@ export class AttendanceService {
     }
 
     concludeMeetingRequest(requestId: number): Observable<HrMeetingRequest> {
-        return this.api.put<HrMeetingRequest>(`/attendance/hr-meetings/${requestId}/conclude`, {});
+        // Manually inject AuthService since it's circular dependency if injected in constructor usually
+        // But here we are already using it in NotificationService. Let's try injecting it in constructor first.
+        // Wait, NotificationService had it injected. AttendanceService only has ApiService.
+        // I need to add AuthService to constructor.
+        const user = this.authService.currentUser();
+        const headers = new HttpHeaders().set('X-User-Role', user?.role || '');
+        return this.api.put<HrMeetingRequest>(`/attendance/hr-meetings/${requestId}/conclude`, {}, { headers });
     }
 }

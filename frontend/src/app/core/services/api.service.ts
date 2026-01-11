@@ -10,18 +10,18 @@ export class ApiService {
   // Can be configured in environment.ts later
   private baseUrl = 'http://localhost:8080/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   get<T>(path: string, params: HttpParams = new HttpParams()): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${path}`, { params });
   }
 
-  post<T>(path: string, body: Object = {}): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${path}`, body);
+  post<T>(path: string, body: Object = {}, options: Object = {}): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}${path}`, body, options);
   }
 
-  put<T>(path: string, body: Object = {}): Observable<T> {
-    return this.http.put<T>(`${this.baseUrl}${path}`, body);
+  put<T>(path: string, body: Object = {}, options: Object = {}): Observable<T> {
+    return this.http.put<T>(`${this.baseUrl}${path}`, body, options);
   }
 
   delete<T>(path: string): Observable<T> {

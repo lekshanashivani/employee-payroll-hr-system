@@ -17,12 +17,14 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * - One retry maximum
  * - No business logic
  */
+import org.springframework.scheduling.annotation.EnableAsync;
+
 @SpringBootApplication
 @EnableFeignClients
+@EnableAsync
 public class NotificationServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(NotificationServiceApplication.class, args);
     }
 }
-

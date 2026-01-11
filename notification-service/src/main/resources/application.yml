@@ -20,8 +20,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: jonanthu67@gmail.com  # Change this
-    password: dkbhnsqlvmznngxp     # Change this - Gmail App Password
+    username: jonanthu67@gmail.com  
+    password: dkbhnsqlvmznngxp     
     properties:
       mail:
         smtp:

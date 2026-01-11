@@ -36,7 +36,7 @@ public class HrMeetingRequest {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "meeting_status", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
     private MeetingStatus status = MeetingStatus.PENDING;
 
     @Column(name = "approved_by")
@@ -165,4 +165,3 @@ public class HrMeetingRequest {
         this.updatedAt = updatedAt;
     }
 }
-

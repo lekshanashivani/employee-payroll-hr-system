@@ -40,6 +40,11 @@ import { AuthService } from '../../../core/services/auth.service';
           HR Meetings
         </a>
 
+        <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
+            <span class="icon">🔔</span>
+            Notifications
+        </a>
+
         <!-- Admin Only Management Links -->
         <ng-container *ngIf="canManageEmployees()">
           <a routerLink="/employees" routerLinkActive="active" class="nav-item">
