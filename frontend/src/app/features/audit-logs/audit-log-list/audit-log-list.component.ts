@@ -11,6 +11,7 @@ import { AuditLog } from '../../../core/models/audit-log.model';
   template: `
     <div class="page-header">
       <h2>Audit Logs</h2>
+      <button (click)="downloadCsv()" class="btn-primary" [disabled]="logs.length === 0">Export CSV</button>
     </div>
 
     <div class="table-container">
@@ -25,7 +26,7 @@ import { AuditLog } from '../../../core/models/audit-log.model';
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let log of logs">
+          <tr *ngFor="let log of displayedLogs">
             <td>{{ log.createdAt | date:'medium' }}</td>
             <td>
               <span class="service-tag">{{ log.serviceName }}</span>
@@ -46,8 +47,10 @@ import { AuditLog } from '../../../core/models/audit-log.model';
     </div>
   `,
   styles: [`
-    .page-header { margin-bottom: 2rem; }
+    .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
     .page-header h2 { margin: 0; color: var(--text-primary); }
+    .btn-primary { padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-primary:disabled { background: var(--text-secondary); cursor: not-allowed; opacity: 0.7; }
     
     .table-container {
       background: var(--surface-color);
@@ -67,6 +70,7 @@ import { AuditLog } from '../../../core/models/audit-log.model';
 })
 export class AuditLogListComponent implements OnInit {
   logs: AuditLog[] = [];
+  displayedLogs: AuditLog[] = []; // Subset for UI
   loading = true;
   userMap = new Map<number, string>();
 
@@ -95,11 +99,15 @@ export class AuditLogListComponent implements OnInit {
   }
 
   loadLogs() {
-    // Fetch logs from 'Employee Service' (covers most HR actions)
-    // AND 'Authentication Service' (covers logins) 
-    this.auditLogService.getAuditLogsByService('Employee%20Service').subscribe({
+    this.auditLogService.getAllAuditLogs().subscribe({
       next: (data) => {
+        // Sort by Latest First
+        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         this.logs = data;
+
+        // Show only last 10 records on UI
+        this.displayedLogs = this.logs.slice(0, 10);
+
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -117,5 +125,35 @@ export class AuditLogListComponent implements OnInit {
 
   toTitleCase(str: string): string {
     return str.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+  }
+
+  downloadCsv() {
+    if (this.logs.length === 0) return;
+
+    const headers = ['Timestamp', 'Service', 'Action', 'Description', 'Performed By'];
+    const rows = this.logs.map(log => [
+      `"${new Date(log.createdAt).toLocaleString()}"`,
+      `"${log.serviceName}"`,
+      `"${this.toTitleCase(log.action)}"`,
+      `"${log.description.replace(/"/g, '""')}"`, // Escape quotes
+      `"${this.resolveUserName(log.performedBy)}"`
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'audit_logs.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   }
 }

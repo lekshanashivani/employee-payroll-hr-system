@@ -26,7 +26,7 @@ export class AuditLogService {
         // or I'll implement a missing endpoint in the backend if I was in backend mode.
         // Since I'm fixing the frontend, I'll use `getAuditLogsByServiceName('EMPLOYEE_SERVICE')` 
         // as a reasonable default for the list view, or better, 'ALL' if supported.
-        return this.api.get<AuditLog[]>('/audit-logs/service/Employee%20Service');
+        return this.api.get<AuditLog[]>('/audit-logs');
     }
 
     getAuditLogsByService(serviceName: string): Observable<AuditLog[]> {

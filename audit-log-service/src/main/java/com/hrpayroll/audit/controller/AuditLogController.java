@@ -73,6 +73,12 @@ public class AuditLogController {
         return ResponseEntity.ok(auditLogs);
     }
 
+    @GetMapping
+    public ResponseEntity<List<AuditLog>> getAllAuditLogs() {
+        List<AuditLog> auditLogs = auditLogService.getAllAuditLogs();
+        return ResponseEntity.ok(auditLogs);
+    }
+
     // DTO
     public static class AuditLogRequest {
         private String action;

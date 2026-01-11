@@ -267,8 +267,10 @@ export class DashboardComponent implements OnInit {
   }
 
   loadActivity() {
-    this.auditLogService.getAuditLogsByService('Employee%20Service').subscribe({
+    this.auditLogService.getAllAuditLogs().subscribe({
       next: (logs) => {
+        // Sort by Latest First
+        logs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         this.recentActivity = logs.slice(0, 5);
         this.cdr.detectChanges();
       },

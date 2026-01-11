@@ -20,6 +20,7 @@ import java.util.Map;
 @Service
 @Transactional
 public class AuditLogService {
+    // Service for handling audit logs
 
     @Autowired
     private AuditLogRepository auditLogRepository;
@@ -28,8 +29,8 @@ public class AuditLogService {
     private ObjectMapper objectMapper;
 
     public AuditLog createAuditLog(String action, String serviceName, Long performedBy,
-                                   Long targetId, String description,
-                                   Map<String, Object> oldValues, Map<String, Object> newValues) {
+            Long targetId, String description,
+            Map<String, Object> oldValues, Map<String, Object> newValues) {
         AuditLog auditLog = new AuditLog();
         auditLog.setAction(action);
         auditLog.setServiceName(serviceName);
@@ -68,9 +69,12 @@ public class AuditLogService {
         return auditLogRepository.findByServiceName(serviceName);
     }
 
+    public List<AuditLog> getAllAuditLogs() {
+        return auditLogRepository.findAll();
+    }
+
     public AuditLog getAuditLogById(Long id) {
         return auditLogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Audit log not found"));
     }
 }
-
